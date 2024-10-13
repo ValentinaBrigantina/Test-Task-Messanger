@@ -20,10 +20,18 @@ export function UpdateAvatarForm({ refetch }: UpdateAvatarFormProps) {
       value.avatar && formData.set('avatar', value.avatar)
       try {
         await updateAvatar(formData)
-        toast.success('Profile photo updated')
+        toast.success('Profile photo updated successfully', {
+          style: {
+            background: 'DarkGrey',
+          },
+        })
         refetch()
       } catch (error) {
-        toast.error('Failed to update your profile')
+        toast.error('Failed to update your profile photo', {
+          style: {
+            background: 'IndianRed',
+          },
+        })
       }
     },
   })

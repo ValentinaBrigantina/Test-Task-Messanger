@@ -21,7 +21,7 @@ function Login() {
       if (data.token) {
         localStorage.setItem('Authorization', data.token);
       }
-      navigate({ to: '/profile' })
+      navigate({ to: '/chat' })
     },
   })
 

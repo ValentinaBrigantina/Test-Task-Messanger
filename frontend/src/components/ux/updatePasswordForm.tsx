@@ -14,9 +14,16 @@ export function UpdatePasswordForm() {
     onSubmit: async ({ value }) => {
       try {
         await updatePassword(value)
+        toast.success('Password updated successfully', {
+          style: {
+            background: 'DarkGrey',
+          },
+        })
       } catch (error) {
-        toast.error('Failed to update your profile', {
-          className 
+        toast.error('Failed to update your password', {
+          style: {
+            background: 'IndianRed',
+          },
         })
       }
     },
