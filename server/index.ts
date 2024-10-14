@@ -1,8 +1,9 @@
 import app from './app'
+import { port } from './helpers/config'
 
 const server = Bun.serve({
-  port: process.env.PORT || 3000,
-  fetch: app.fetch
+  port,
+  ...app,
 })
 
-console.log("server running", server.port)
+console.log('server running', server.port)

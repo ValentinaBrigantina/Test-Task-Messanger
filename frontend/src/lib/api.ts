@@ -1,9 +1,14 @@
 import { hc } from 'hono/client'
 import { type ApiRoutes } from '@server/app'
 import { queryOptions } from '@tanstack/react-query'
-import { type AuthSchema, DataUpdatePassword, JwtToken } from '@server/sharedTypes'
+import {
+  type AuthSchema,
+  DataUpdatePassword,
+  JwtToken,
+} from '@server/sharedTypes'
+import { apiHost } from '@/utils/config'
 
-const client = hc<ApiRoutes>('/')
+const client = hc<ApiRoutes>(apiHost)
 
 export const api = client.api
 
@@ -33,7 +38,7 @@ export const userQueryOptions = queryOptions({
 export async function updateAvatar(formData: FormData) {
   const token = localStorage.getItem('Authorization')
 
-  const res = await fetch('api/profile/avatar', {
+  const res = await fetch(`${apiHost}/api/profile/avatar`, {
     method: 'PUT',
     headers: {
       ...(token && { Authorization: token }),
@@ -50,12 +55,14 @@ export async function updateAvatar(formData: FormData) {
 export async function updatePassword(value: DataUpdatePassword) {
   const token = localStorage.getItem('Authorization')
 
-  const res = await api.profile.password.$put({ json: value },
+  const res = await api.profile.password.$put(
+    { json: value },
     {
       headers: {
         ...(token && { Authorization: token }),
       },
-    })
+    }
+  )
 
   if (!res.ok) {
     throw new Error('Server error')

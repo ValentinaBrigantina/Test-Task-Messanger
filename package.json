@@ -6,8 +6,8 @@
     "start": "bun server/index.ts",
     "dev": "bun --watch server/index.ts",
     "db:up": "docker compose up --build -d",
-    "db:generate": "bun drizzle-kit generate",
-    "db:migrate": "bun drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "db:studio": "bunx drizzle-kit studio",
     "db:down": "docker compose down"
   },
@@ -25,7 +25,7 @@
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
-    "hono": "^4.5.9",
+    "hono": "^4.6.4",
     "pg": "^8.12.0",
     "postgres": "^3.4.4",
     "zod": "^3.23.8"

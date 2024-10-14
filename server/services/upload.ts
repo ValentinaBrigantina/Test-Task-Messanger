@@ -1,7 +1,6 @@
 import { exists, mkdir } from 'node:fs/promises'
 import { writeFile } from 'node:fs/promises'
-
-const urlHost = process.env.HOST || 'http://localhost:3000'
+import { host } from '../helpers/config'
 
 const createDirIfNotExists = async (dir: string) => {
   const isExists = await exists(dir)
@@ -18,9 +17,9 @@ export const getPath = async (name: string) => {
   return `${uploadFolder}/${name}`
 }
 
-export const getUrl = (name: string) => `${urlHost}/uploads/${name}`
+export const getUrl = (name: string) => `${host}/uploads/${name}`
 
 export const upload = async (file: File, path: string) => {
-  const buffer = await file.arrayBuffer()
-  await writeFile(path, Buffer.from(buffer))
+  const buffer = await file.bytes()
+  await writeFile(path, buffer)
 }

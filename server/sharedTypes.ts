@@ -1,3 +1,4 @@
+import type { insertMessageSchema } from './db/schema/messages'
 import { insertUserSchema, selectUserSchema } from './db/schema/users'
 import { z } from 'zod'
 
@@ -31,10 +32,6 @@ const payloadData = insertUserSchema.pick({
   })
 export type PayloadUserData = z.infer<typeof payloadData>
 
-export type ProfileFormData = {
-  avatar: File
-}
-
 export const fileSchema = z
 .instanceof(File)
 .refine(
@@ -55,4 +52,6 @@ export const fileSchema = z
   },
   { message: 'File size must not exceed 5 MB' }
 )
-export type ValidFile = z.infer<typeof fileSchema>;
+export type ValidFile = z.infer<typeof fileSchema>
+
+export type MessageSchema = z.infer<typeof insertMessageSchema>
