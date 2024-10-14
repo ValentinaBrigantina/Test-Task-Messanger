@@ -1,4 +1,4 @@
-# my-project
+# Test-Task-Messenger
 
 To install dependencies:
 
@@ -6,10 +6,17 @@ To install dependencies:
 bun install
 ```
 
-To run:
+To run app:
 
 ```bash
-bun run index.ts
+bun dev
 ```
 
-This project was created using `bun init` in bun v1.1.26. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+To run DataBase:
+
+```bash
+bun db:generate // to generate a schema 
+bun db:migrate // for schema migration
+bun db:up // run docker container with database
+bun db:studio // launch Drizzle Studio https://local.drizzle.studio
+```
