@@ -1,57 +1,18 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 
 import { HeaderProfile } from '@/components/ux/headerProfile'
-import { api, userQueryOptions } from '@/lib/api'
+import { userQueryOptions } from '@/lib/api'
 import { UserProfile } from '@server/sharedTypes'
+import { useWebSocket } from '@/utils/hooks/useWebSocket'
+import { useForm } from '@tanstack/react-form'
+import { Label } from '@radix-ui/react-label'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/_authenticated/chat')({
   component: Chat,
 })
-
-const useWebSocket = (): [
-  boolean,
-  (data: Record<string, any>) => void,
-  () => void,
-] => {
-  const [connection, setConnection] = useState<undefined | WebSocket>()
-  const [isConnected, setIsConnected] = useState<boolean>(false)
-  const initialized = useRef(false)
-
-  useEffect(() => {
-    let ws: WebSocket
-
-    if (!initialized.current) {
-      ws = api.ws.$ws()
-      setConnection(ws)
-
-      ws.addEventListener('open', () => {
-        if (ws.readyState === ws.OPEN) {
-          setIsConnected(true)
-        }
-      })
-    }
-
-    initialized.current = true
-  }, [])
-
-  const send = useCallback(
-    (data: Record<string, any>) => {
-      if (!connection) {
-        console.warn('Can not send websocket message. Its not connected')
-        return
-      }
-
-      connection.send(JSON.stringify(data))
-    },
-    [connection]
-  )
-
-  const close = () => connection?.close()
-
-  return [isConnected, send, close]
-}
 
 export function Chat() {
   const { isPending, error, data } = useQuery(userQueryOptions)
@@ -62,34 +23,76 @@ export function Chat() {
 
   const user: UserProfile = data?.user
 
+  const form = useForm({
+    defaultValues: {
+      message: '',
+    },
+    onSubmit: async ({ value }) => {
+      if (isWSReady) {
+        sendWSdata(value)
+        form.setFieldValue('message', '')
+      }
+    },
+  })
+
   return (
     <>
       <HeaderProfile {...user} />
-      <form id="form">
-        <input type="text" id="data" placeholder="send message" />
-        <button type="submit" id="send">
-          Send ᯓ✉︎
-        </button>
-      </form>
+      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+          <h1 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-100">
+            Chat
+          </h1>
+        </div>
 
-      <button
-        onClick={() => {
-          if (isWSReady) {
-            sendWSdata({ hello: 1 })
-          }
-        }}
-      >
-        Send test
-      </button>
-
-      <br />
-      <button
-        onClick={() => {
-          close()
-        }}
-      >
-        Finish
-      </button>
+        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+          <div>
+            <ul></ul>
+          </div>
+          <div className="grid w-full gap-1.5">
+            <form
+              className="space-y-6"
+              onSubmit={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                form.handleSubmit()
+              }}
+            >
+              <div>
+                <form.Field
+                  name="message"
+                  children={(field) => (
+                    <>
+                      <Label htmlFor={field.name}>Your message</Label>
+                      <Textarea
+                        id={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        required
+                        placeholder="Type your message here."
+                        className="block ring-1 ring-inset ring-gray-300"
+                      />
+                    </>
+                  )}
+                />
+                <form.Subscribe
+                  selector={(state) => [state.canSubmit, state.isSubmitting]}
+                  children={([canSubmit, isSubmitting]) => (
+                    <Button
+                      className="flex w-full justify-center"
+                      type="submit"
+                      disabled={!canSubmit}
+                    >
+                      {isSubmitting ? '...' : 'Submit'}
+                    </Button>
+                  )}
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </>
   )
 }
