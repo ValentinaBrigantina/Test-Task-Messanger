@@ -16,7 +16,7 @@ To run DataBase:
 
 ```bash
 bun db:generate // to generate a schema 
-bun db:migrate // for schema migration
 bun db:up // run docker container with database
+bun db:migrate // for schema migration
 bun db:studio // launch Drizzle Studio https://local.drizzle.studio
 ```

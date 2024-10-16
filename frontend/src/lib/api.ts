@@ -5,6 +5,8 @@ import {
   type AuthSchema,
   DataUpdatePassword,
   JwtToken,
+  MessageSchema,
+  UserProfile,
 } from '@server/sharedTypes'
 import { apiHost } from '@/utils/config'
 
@@ -12,26 +14,45 @@ const client = hc<ApiRoutes>(apiHost)
 
 export const api = client.api
 
-async function getCurrentUser() {
+const getAuthHeaders = () => {
   const token = localStorage.getItem('Authorization')
+  if (!token) {
+    throw new Error('Authorization token is missing')
+  }
+  return {
+    headers: {
+      ...(token && { Authorization: token }),
+    },
+  }
+}
 
-  const res = await api.me.$get(
-    {},
-    {
-      headers: {
-        ...(token && { Authorization: token }),
-      },
-    }
-  )
+async function getCurrentUser() {
+  const headers = getAuthHeaders()
+  const res = await api.me.$get({}, headers)
   if (!res.ok) {
     throw new Error('server error')
   }
-  return await res.json()
+  return res.json()
 }
 
 export const userQueryOptions = queryOptions({
   queryKey: ['get-current-user'],
   queryFn: getCurrentUser,
+  staleTime: Infinity,
+})
+
+async function getContacts(): Promise<UserProfile[]> {
+  const headers = getAuthHeaders()
+  const res = await api.chat.contacts.$get({}, headers)
+  if (!res.ok) {
+    throw new Error('server error')
+  }
+  return res.json()
+}
+
+export const contactsQueryOptions = queryOptions({
+  queryKey: ['get-contacts'],
+  queryFn: getContacts,
   staleTime: Infinity,
 })
 
@@ -53,17 +74,8 @@ export async function updateAvatar(formData: FormData) {
 }
 
 export async function updatePassword(value: DataUpdatePassword) {
-  const token = localStorage.getItem('Authorization')
-
-  const res = await api.profile.password.$put(
-    { json: value },
-    {
-      headers: {
-        ...(token && { Authorization: token }),
-      },
-    }
-  )
-
+  const headers = getAuthHeaders()
+  const res = await api.profile.password.$put({ json: value }, headers)
   if (!res.ok) {
     throw new Error('Server error')
   }
@@ -84,3 +96,18 @@ export async function registration(value: AuthSchema): Promise<void> {
     throw new Error('server error')
   }
 }
+
+export async function getMessages(): Promise<MessageSchema[]> {
+  const headers = getAuthHeaders()
+  const res = await api.chat.messages.$get({}, headers)
+  if (!res.ok) {
+    throw new Error('server error')
+  }
+  return res.json()
+}
+
+export const getMessagesQueryOptions = queryOptions({
+  queryKey: ['get-messages'],
+  queryFn: getMessages,
+  staleTime: Infinity,
+})

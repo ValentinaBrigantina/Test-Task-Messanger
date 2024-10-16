@@ -1,6 +1,6 @@
 {
-  "id": "74197ba2-1683-4a99-bb53-0dfb4b1366ec",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "23c5e7ac-011e-4c6e-990d-093708da3632",
+  "prevId": "74197ba2-1683-4a99-bb53-0dfb4b1366ec",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -38,9 +38,10 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
         "author_id": {
           "name": "author_id",

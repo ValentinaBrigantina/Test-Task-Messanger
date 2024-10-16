@@ -5,8 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1728897304096,
-      "tag": "0000_wooden_grey_gargoyle",
+      "when": 1729091160472,
+      "tag": "0000_green_roland_deschain",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1729094643049,
+      "tag": "0001_steep_randall",
       "breakpoints": true
     }
   ]
