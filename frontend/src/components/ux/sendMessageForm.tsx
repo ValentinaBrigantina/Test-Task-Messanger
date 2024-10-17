@@ -1,6 +1,6 @@
+import { FormApi, ReactFormApi } from '@tanstack/react-form'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { FormApi, ReactFormApi } from '@tanstack/react-form'
 
 interface FormData {
   text: string
@@ -12,13 +12,7 @@ export interface ISendMessageFormProps {
   form: FormApi<FormData> & ReactFormApi<FormData>
 }
 
-export function SendMessageForm({
-//   isWSReady,
-//   sendWSdata,
-  form,
-}: ISendMessageFormProps) {
-
-
+export function SendMessageForm({ form }: ISendMessageFormProps) {
   return (
     <div className="grid w-full gap-1.5">
       <form

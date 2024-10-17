@@ -19,7 +19,7 @@ function Login() {
     onSubmit: async ({ value }) => {
       const data = await login(value)
       if (data.token) {
-        localStorage.setItem('Authorization', data.token);
+        localStorage.setItem('Authorization', data.token)
       }
       navigate({ to: '/chat' })
     },

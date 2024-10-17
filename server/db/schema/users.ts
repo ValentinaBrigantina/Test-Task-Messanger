@@ -1,8 +1,9 @@
 import { text, pgTable, serial } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
+
 import { Role } from '../../helpers/getUser'
-import { relations } from 'drizzle-orm'
 import { messages } from './messages'
 
 export const users = pgTable('users', {
@@ -21,4 +22,4 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const insertUserSchema = createInsertSchema(users)
 export const selectUserSchema = createSelectSchema(users)
 
-export type UserSchema = z.infer<typeof selectUserSchema>
+export type UserSchemaSelect = z.infer<typeof selectUserSchema>

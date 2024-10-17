@@ -1,6 +1,6 @@
-import type { MessageSchemaInsert, MessageSchemaSelect } from './db/schema/messages'
-import { insertUserSchema, selectUserSchema } from './db/schema/users'
 import { z } from 'zod'
+import type { MessageSchemaInsert } from './db/schema/messages'
+import { insertUserSchema, selectUserSchema } from './db/schema/users'
 
 export const authUserData = insertUserSchema.pick({
   name: true,
@@ -55,5 +55,17 @@ export const fileSchema = z
 export type ValidFile = z.infer<typeof fileSchema>
 
 export type MessageSchema = Omit<MessageSchemaInsert, 'authorID'> & {
-  authorID: UserProfile
+  author: UserProfile
+}
+
+export type WsTextDataFromClient = {
+  eventType: string,
+  text: string,
+  isChat: boolean,
+  authorID: number,
+}
+
+export type WsTextDataFromApi = {
+  eventType: string,
+  message: MessageSchema,
 }

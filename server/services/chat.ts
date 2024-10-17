@@ -1,12 +1,19 @@
 import { HTTPException } from 'hono/http-exception'
-import { ne, eq, and } from 'drizzle-orm'
+import { ne, eq } from 'drizzle-orm'
+
 import { db } from '../db'
 import {
   messages as messagesTable,
   type MessageSchemaInsert,
 } from '../db/schema/messages'
 import { users as usersTable } from '../db/schema/users'
-import type { MessageSchema, UserProfile } from '../sharedTypes'
+import type {
+  MessageSchema,
+  UserProfile,
+  WsTextDataFromApi,
+} from '../sharedTypes'
+import { getUserByID } from './user'
+import { wsChat } from '../helpers/constants'
 
 export const saveMessage = async (
   data: MessageSchemaInsert
@@ -37,7 +44,7 @@ export const getMessagesForChat = (): Promise<MessageSchema[]> =>
       id: messagesTable.id,
       text: messagesTable.text,
       createdAt: messagesTable.createdAt,
-      authorID: {
+      author: {
         id: usersTable.id,
         name: usersTable.name,
         avatar: usersTable.avatar,
@@ -51,3 +58,11 @@ export const getMessagesForChat = (): Promise<MessageSchema[]> =>
     .where(eq(messagesTable.isChat, true))
     .innerJoin(usersTable, eq(messagesTable.authorID, usersTable.id))
     .orderBy(messagesTable.createdAt)
+
+export const getMessageWithAuthorProfile = async ({
+  authorID,
+  ...dataMessage
+}: MessageSchemaInsert): Promise<WsTextDataFromApi> => {
+  const { password, ...author } = await getUserByID(authorID)
+  return { eventType: wsChat, message: { ...dataMessage, author } }
+}

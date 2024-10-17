@@ -1,6 +1,6 @@
 import { hc } from 'hono/client'
-import { type ApiRoutes } from '@server/app'
 import { queryOptions } from '@tanstack/react-query'
+import { type ApiRoutes } from '@server/app'
 import {
   type AuthSchema,
   DataUpdatePassword,
@@ -26,7 +26,7 @@ const getAuthHeaders = () => {
   }
 }
 
-async function getCurrentUser() {
+async function getCurrentUser(): Promise<{ user: UserProfile }> {
   const headers = getAuthHeaders()
   const res = await api.me.$get({}, headers)
   if (!res.ok) {

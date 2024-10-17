@@ -8,12 +8,12 @@ export interface IChatContactsProps {
 
 export function ChatContacts({ contacts = [] }: IChatContactsProps) {
   return (
-    <div className="basis-1/3 flex-none">
+    <div className="basis-1/4 flex-none">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h1 className="text-xl leading-9 tracking-tight text-gray-100">
-          Contacts
-        </h1>
-      </div>
+            <h1 className="text-xl leading-9 tracking-tight text-gray-100">
+              Contacts
+            </h1>
+          </div>
       <ul>
         {contacts.map((contact) => {
           return (

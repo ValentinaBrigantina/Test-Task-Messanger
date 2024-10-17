@@ -7,5 +7,5 @@ export const channels = pgTable('channels', {
 })
 
 export const channelsRelations = relations(channels, ({ many }) => ({
-    channel: many(messages),
-  }))
+  channel: many(messages),
+}))

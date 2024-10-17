@@ -1,6 +1,7 @@
 import { createMiddleware } from 'hono/factory'
-import { getDataFromToken, getUserByName } from '../services/auth'
-import type { UserSchema } from '../db/schema/users'
+import { getDataFromToken } from '../services/auth'
+import type { UserSchemaSelect } from '../db/schema/users'
+import { getUserByName } from '../services/user'
 
 export enum Role {
   User = 'user',
@@ -9,7 +10,7 @@ export enum Role {
 
 type Env = {
   Variables: {
-    user: UserSchema
+    user: UserSchemaSelect
   }
 }
 
@@ -26,7 +27,7 @@ export const getUser = createMiddleware<Env>(async (c, next) => {
       return c.json({ error: 'Unauthorized' }, 401)
     }
     const { name } = payload
-    const userData: UserSchema = await getUserByName(name as string)
+    const userData: UserSchemaSelect = await getUserByName(name as string)
     c.set('user', userData)
   } catch (error) {
     return c.json({ error: 'Invalid token' }, 401)

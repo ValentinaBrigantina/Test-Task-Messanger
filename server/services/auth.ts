@@ -1,11 +1,12 @@
 import { HTTPException } from 'hono/http-exception'
 import { decode, sign, verify } from 'hono/jwt'
 import * as bcrypt from 'bcryptjs'
+
 import { db } from '../db'
 import { users as usersTable } from '../db/schema/users'
-import { eq } from 'drizzle-orm'
 import type { AuthSchema, JwtToken, PayloadUserData } from '../sharedTypes'
 import { Role } from '../helpers/getUser'
+import { getUserByName } from './user'
 
 const secretJwtKey = process.env.JWT_KEY || 'secret'
 
@@ -18,7 +19,7 @@ export const checkValidToken = async (token: string) => {
 }
 
 export const getDataFromToken = async (token: string) => {
-  const { header, payload } = decode(token)
+  const { payload } = decode(token)
   return payload
 }
 
@@ -27,14 +28,6 @@ const createJwtToken = async (payload: PayloadUserData) => {
     expiresIn: '365d',
   }
   return await sign({ ...payload, ...options }, secretJwtKey)
-}
-
-export const getUserByName = async (name: string) => {
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.name, name))
-  return user
 }
 
 export const createHash = (string: string) => bcrypt.hash(string, 6)
@@ -48,7 +41,7 @@ export const registration = async (authData: AuthSchema) => {
     throw new HTTPException(409, { message: 'user already exist' })
   }
   const hashPassword = await createHash(authData.password)
-  const [{password, ...user}] = await db
+  const [{ password, ...user }] = await db
     .insert(usersTable)
     .values({ ...authData, role: Role.User, password: hashPassword })
     .returning()

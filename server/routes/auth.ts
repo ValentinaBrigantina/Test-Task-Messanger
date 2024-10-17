@@ -5,7 +5,7 @@ import { login, registration } from '../services/auth'
 import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
 import { authUserData, type JwtToken, type UserProfile } from '../sharedTypes'
-import type { UserSchema } from '../db/schema/users'
+import type { UserSchemaSelect } from '../db/schema/users'
 
 type Variables = JwtVariables
 
@@ -25,7 +25,7 @@ export const authRoute = new Hono<{ Variables: Variables }>()
   })
 
   .get('/me',authMiddleware, getUser, async (c) => {
-    const { password, ...user }: UserSchema = c.var.user
+    const { password, ...user }: UserSchemaSelect = c.var.user
     return c.json({ user })
   })
 
