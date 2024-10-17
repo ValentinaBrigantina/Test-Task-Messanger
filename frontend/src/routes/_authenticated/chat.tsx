@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from '@tanstack/react-form'
 
 import {
@@ -30,15 +30,25 @@ export function Chat() {
   const { data: contacts = [], isFetched: isContactsFetched } =
     useQuery(contactsQueryOptions)
   const { data: userData } = useQuery(userQueryOptions)
-  const { data: messagesData = [] } = useQuery(getMessagesQueryOptions)
+  const queryClient = useQueryClient()
+  const messagesQuery = useQuery(getMessagesQueryOptions)
   const [messages, setMessages] = useState<MessageSchema[]>([])
   const { isConnected, send: sendWSdata, connection } = useWebSocket()
 
   useEffect(() => {
-    if (messagesData.length) {
-      setMessages(messagesData)
+    return () => {
+      queryClient.invalidateQueries({
+        queryKey: getMessagesQueryOptions.queryKey,
+        exact: true,
+      })
     }
-  }, [messagesData])
+  }, [])
+
+  useEffect(() => {
+    if (messagesQuery.data?.length) {
+      setMessages(messagesQuery.data)
+    }
+  }, [messagesQuery.data])
 
   useEffect(() => {
     if (messages.length && connection) {
