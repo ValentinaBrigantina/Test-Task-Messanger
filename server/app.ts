@@ -1,12 +1,15 @@
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
+import type { ServerWebSocket } from 'bun'
 import { createBunWebSocket } from 'hono/bun'
 import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
+
 import { authRoute } from './routes/auth'
 import { profileRoute } from './routes/profile'
 import { chatRoute } from './routes/chat'
 import { wsHandler } from './helpers/wsHandler'
+import { wsChat } from './helpers/constants'
 
 const app = new Hono()
 const { upgradeWebSocket, websocket } = createBunWebSocket()
@@ -18,7 +21,14 @@ const apiRoutes = app
   .basePath('api')
   .get(
     '/ws',
-    upgradeWebSocket(() => ({ onMessage: wsHandler }))
+    upgradeWebSocket(() => ({
+      onMessage: wsHandler,
+      onOpen(_, ws) {
+
+        const rawWs = ws.raw as ServerWebSocket
+        rawWs.subscribe(wsChat)
+      },
+    }))
   )
   .route('/', authRoute)
   .route('/profile', profileRoute)
