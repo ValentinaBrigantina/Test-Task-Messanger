@@ -1,18 +1,40 @@
 # Test-Task-Messenger
 
-To install dependencies:
+
+## Stack
+
+- Bun
+- Hono, Hono RPS
+- TypeScript
+- Drizzle ORM
+- PosgreSQL
+- WebSocket
+- Zod (validator)
+
+Client:
+- React 18
+- Vite
+- Tanstack Router, Query, and Form
+- Tailwind
+
+## To install dependencies and run API:
 
 ```bash
-bun install
+touch .env | cp .env.example .env // to create env
+bun install // to install dependencies
+bun dev // to run
 ```
 
-To run app:
+## To install dependencies and run CLIENT:
 
 ```bash
-bun dev
+touch frontend/.env | cp frontend/.env.example frontend/.env // to create env
+cd frontend // move to directory
+bun install // to install dependencies
+bun dev // to run
 ```
 
-To run DataBase:
+## To run DataBase:
 
 ```bash
 bun db:generate // to generate a schema 
