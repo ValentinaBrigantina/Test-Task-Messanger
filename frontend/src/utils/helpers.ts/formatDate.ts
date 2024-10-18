@@ -1,7 +1,17 @@
-export const formatDate = (string: string): string => {
-    const date = new Date(string)
-    const hours = date.getHours()
-    const minutes = date.getMinutes()
-    const minutesFormat = minutes < 10 ? `0${minutes}` : minutes
-    return `${hours}:${minutesFormat}`
-  }
+export interface IDate {
+  day: string
+  time: string
+}
+
+export const formatDate = (string: string): IDate => {
+  const dateObj = new Date(string)
+  const day = dateObj.toLocaleDateString('en-EN', {
+    day: '2-digit',
+    month: 'long',
+  })
+  const time = dateObj.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  return { day, time }
+}

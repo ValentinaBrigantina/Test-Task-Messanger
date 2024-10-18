@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { MessageSchemaInsert } from './db/schema/messages'
+import type { MessageSchemaSelect } from './db/schema/messages'
 import { insertUserSchema, selectUserSchema } from './db/schema/users'
 
 export const authUserData = insertUserSchema.pick({
@@ -54,7 +54,7 @@ export const fileSchema = z
 )
 export type ValidFile = z.infer<typeof fileSchema>
 
-export type MessageSchema = Omit<MessageSchemaInsert, 'authorID'> & {
+export type MessageSchema = Omit<MessageSchemaSelect, 'authorID'> & {
   author: UserProfile
 }
 
