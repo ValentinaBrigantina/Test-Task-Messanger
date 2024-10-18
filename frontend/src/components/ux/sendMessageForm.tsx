@@ -13,6 +13,16 @@ export interface ISendMessageFormProps {
 }
 
 export function SendMessageForm({ form }: ISendMessageFormProps) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        return
+      } else {
+        form.handleSubmit()
+      }
+    }
+  }
+
   return (
     <div className="grid w-full gap-1.5">
       <form
@@ -30,8 +40,8 @@ export function SendMessageForm({ form }: ISendMessageFormProps) {
               <Textarea
                 id={field.name}
                 value={field.state.value}
-                onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                onKeyDown={handleKeyDown}
                 required
                 placeholder="Type your message here."
                 className="block ring-1 ring-inset ring-gray-300"
