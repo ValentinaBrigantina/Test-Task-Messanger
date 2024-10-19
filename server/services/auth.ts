@@ -4,7 +4,12 @@ import * as bcrypt from 'bcryptjs'
 
 import { db } from '../db'
 import { users as usersTable } from '../db/schema/users'
-import type { AuthSchema, JwtToken, PayloadUserData } from '../sharedTypes'
+import type {
+  AuthSchema,
+  JwtToken,
+  PayloadUserData,
+  UserProfile,
+} from '../sharedTypes'
 import { Role } from '../helpers/getUser'
 import { getUserByName } from './user'
 
@@ -35,7 +40,9 @@ export const createHash = (string: string) => bcrypt.hash(string, 6)
 export const compareHash = (hash: string, string: string) =>
   bcrypt.compare(hash, string)
 
-export const registration = async (authData: AuthSchema) => {
+export const registration = async (
+  authData: AuthSchema
+): Promise<UserProfile> => {
   const isExist = !!(await getUserByName(authData.name))
   if (isExist) {
     throw new HTTPException(409, { message: 'user already exist' })

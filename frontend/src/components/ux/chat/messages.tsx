@@ -5,15 +5,15 @@ import { MessageSchema, WsTextDataFromApi } from '@server/sharedTypes'
 import { getMessagesQueryOptions } from '@/lib/api'
 import { formatDate, IDate } from '@/utils/helpers.ts/formatDate'
 import { Message } from './message'
-import { Ws } from '@/utils/constants'
+import { WsActions } from '@/utils/constants'
+import { useWebSocket } from '@/utils/hooks/useWebSocket'
 
-interface IMessagesProps {
-  connection: WebSocket | undefined
-}
-export function Messages({ connection }: IMessagesProps) {
+export function Messages() {
+  const { isConnected, subscribe } = useWebSocket()
   const queryClient = useQueryClient()
   const messagesQuery = useQuery(getMessagesQueryOptions)
   const [messages, setMessages] = useState<MessageSchema[]>([])
+  const isWsReady = isConnected()
 
   useEffect(() => {
     return () => {
@@ -31,12 +31,12 @@ export function Messages({ connection }: IMessagesProps) {
   }, [messagesQuery.data])
 
   useEffect(() => {
-    if (messages.length && connection) {
-      connection.addEventListener('message', (event) => {
+    if (messages.length && isWsReady) {
+      subscribe((event) => {
         const data: WsTextDataFromApi = JSON.parse(event.data)
 
         switch (data.eventType) {
-          case Ws.Chat:
+          case WsActions.UpdateChat:
             setMessages([...messages, data.message])
             break
 
@@ -45,7 +45,7 @@ export function Messages({ connection }: IMessagesProps) {
         }
       })
     }
-  }, [messages, connection])
+  }, [messages, isWsReady])
 
   return (
     <ul>

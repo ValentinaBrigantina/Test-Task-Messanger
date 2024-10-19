@@ -14,7 +14,7 @@ export const updatePassword = async (
   return user
 }
 
-export const uploadAvatar = async (file: File) => {
+export const uploadAvatar = async (file: File): Promise<string> => {
   const name = createUniqueName(file.name)
   const path = await getPath(name)
   await upload(file, path)

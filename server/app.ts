@@ -8,8 +8,8 @@ import { cors } from 'hono/cors'
 import { authRoute } from './routes/auth'
 import { profileRoute } from './routes/profile'
 import { chatRoute } from './routes/chat'
-import { wsHandler } from './helpers/wsHandler'
-import { Ws } from '../frontend/src/utils/constants'
+import { wsHandler } from './helpers/webSocket'
+import { WsActions } from '../frontend/src/utils/constants'
 
 const app = new Hono()
 const { upgradeWebSocket, websocket } = createBunWebSocket()
@@ -24,9 +24,9 @@ const apiRoutes = app
     upgradeWebSocket(() => ({
       onMessage: wsHandler,
       onOpen(_, ws) {
-
         const rawWs = ws.raw as ServerWebSocket
-        rawWs.subscribe(Ws.Chat)
+        rawWs.subscribe(WsActions.UpdateChat)
+        rawWs.subscribe(WsActions.UpdateContacts)
       },
     }))
   )

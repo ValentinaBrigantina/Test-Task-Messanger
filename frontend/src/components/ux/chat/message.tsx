@@ -10,7 +10,7 @@ export interface IMessageProps {
 
 export function Message({ message, date }: IMessageProps) {
   return (
-    <li className="my-1" key={message.id}>
+    <li className="my-1">
       <Card className="bg-background flex px-2">
         <UserAvatar user={message.author} />
         <CardContent className="p-3 grow">{message.text}</CardContent>

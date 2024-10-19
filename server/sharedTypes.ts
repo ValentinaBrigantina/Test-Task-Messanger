@@ -69,3 +69,8 @@ export type WsTextDataFromApi = {
   eventType: string,
   message: MessageSchema,
 }
+
+export type WsNewContactFromApi = {
+  eventType: string,
+  contact: UserProfile,
+}

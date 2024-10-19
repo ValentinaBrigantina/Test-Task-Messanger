@@ -1,10 +1,49 @@
-import { useQuery } from '@tanstack/react-query'
-import { contactsQueryOptions } from '@/lib/api'
+import { useEffect, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { getContactsQueryOptions } from '@/lib/api'
 import { Contact } from './contact'
+import { WsActions } from '@/utils/constants'
+import { UserProfile, WsNewContactFromApi } from '@server/sharedTypes'
+import { useWebSocket } from '@/utils/hooks/useWebSocket'
 
 export function Contacts() {
-  const { data: contacts = [], isFetched: isContactsFetched } =
-    useQuery(contactsQueryOptions)
+  const queryClient = useQueryClient()
+  const contactsQuery = useQuery(getContactsQueryOptions)
+  const { isConnected, subscribe } = useWebSocket()
+  const isWsReady = isConnected()
+  const [contacts, setContacts] = useState<UserProfile[]>([])
+
+  useEffect(() => {
+    return () => {
+      queryClient.invalidateQueries({
+        queryKey: getContactsQueryOptions.queryKey,
+        exact: true,
+      })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (contactsQuery.data?.length) {
+      setContacts(contactsQuery.data)
+    }
+  }, [contactsQuery.data])
+
+  useEffect(() => {
+    if (contacts.length && isWsReady) {
+      subscribe((event) => {
+        const data: WsNewContactFromApi = JSON.parse(event.data)
+
+        switch (data.eventType) {
+          case WsActions.UpdateContacts:
+            setContacts([...contacts, data.contact])
+            break
+
+          default:
+            break
+        }
+      })
+    }
+  }, [contacts, isWsReady])
 
   return (
     <div className="basis-1/4 flex-none">
@@ -14,7 +53,7 @@ export function Contacts() {
         </h1>
       </div>
       <ul>
-        {isContactsFetched &&
+        {contactsQuery.isFetched &&
           contacts.map((contact) => {
             return <Contact contact={contact} key={contact.id} />
           })}

@@ -14,7 +14,7 @@ import type {
   WsTextDataFromApi,
 } from '../sharedTypes'
 import { getUserByID } from './user'
-import { Ws } from '../../frontend/src/utils/constants'
+import { WsActions } from '../../frontend/src/utils/constants'
 
 export const saveMessage = async (
   data: MessageSchemaInsert
@@ -65,5 +65,8 @@ export const getMessageWithAuthorProfile = async ({
   ...dataMessage
 }: MessageSchemaSelect): Promise<WsTextDataFromApi> => {
   const { password, ...author } = await getUserByID(authorID)
-  return { eventType: Ws.Chat, message: { ...dataMessage, author } }
+  return {
+    eventType: WsActions.UpdateChat,
+    message: { ...dataMessage, author },
+  }
 }

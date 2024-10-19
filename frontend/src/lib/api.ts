@@ -50,7 +50,7 @@ async function getContacts(): Promise<UserProfile[]> {
   return res.json()
 }
 
-export const contactsQueryOptions = queryOptions({
+export const getContactsQueryOptions = queryOptions({
   queryKey: ['get-contacts'],
   queryFn: getContacts,
   staleTime: Infinity,

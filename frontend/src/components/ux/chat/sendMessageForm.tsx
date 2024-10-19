@@ -4,32 +4,29 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { userQueryOptions } from '@/lib/api'
 import { WsTextDataFromClient } from '@server/sharedTypes'
-import { Ws } from '@server/helpers/constants'
+import { WsActions } from '@server/helpers/constants'
+import { useWebSocket } from '@/utils/hooks/useWebSocket'
 
-export interface ISendMessageFormProps {
-  isWSReady: boolean
-  sendWSdata: (data: any) => void
-}
+export interface ISendMessageFormProps {}
 
-export function SendMessageForm({
-  isWSReady,
-  sendWSdata,
-}: ISendMessageFormProps) {
+export function SendMessageForm({}: ISendMessageFormProps) {
   const { data: userData } = useQuery(userQueryOptions)
+  const { isConnected, send } = useWebSocket()
+  const isWsReady = isConnected()
 
   const form = useForm({
     defaultValues: {
       text: '',
     },
-    onSubmit: async ({ value }) => {
-      if (isWSReady && userData) {
+    onSubmit: ({ value }) => {
+      if (isWsReady && userData) {
         const messageData: WsTextDataFromClient = {
           ...value,
-          eventType: Ws.Chat,
+          eventType: WsActions.UpdateChat,
           isChat: true,
           authorID: userData.user.id,
         }
-        sendWSdata(messageData)
+        send(messageData)
         form.setFieldValue('text', '')
       }
     },

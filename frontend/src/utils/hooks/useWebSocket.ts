@@ -1,51 +1,38 @@
 import { api } from '@/lib/api'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
+
+export type ConnectionCb = (event: MessageEvent<any>) => void
 
 interface iUseWebSocket {
-  isConnected: boolean
+  isConnected: () => boolean
   send: (data: Record<string, any>) => void
   close: () => void
-  connection: undefined | WebSocket
+  subscribe: (cb: ConnectionCb) => void
 }
 
+let ws: WebSocket | null = null
+
 export const useWebSocket = (): iUseWebSocket => {
-  const [connection, setConnection] = useState<undefined | WebSocket>()
-  const [isConnected, setIsConnected] = useState<boolean>(false)
-  const initialized = useRef(false)
-
   useEffect(() => {
-    if (!initialized.current) {
-      const ws = api.ws.$ws()
-      setConnection(ws)
+    if (!ws) {
+      ws = api.ws.$ws()
 
-      ws.addEventListener('open', () => {
-        if (ws.readyState === ws.OPEN) {
-          setIsConnected(true)
-        }
+      ws.addEventListener('close', () => {
+        ws = null
       })
     }
-
-    initialized.current = true
   }, [])
 
-  const send = useCallback(
-    (data: Record<string, any>) => {
-      if (!connection) {
-        console.warn('Can not send websocket message. Its not connected')
-        return
+  return {
+    send: <T extends any>(data: Record<string, T>) =>
+      ws?.send(JSON.stringify(data)),
+    close: () => ws?.close(),
+    subscribe: (cb: ConnectionCb) => ws?.addEventListener('message', cb),
+    isConnected: () => {
+      if (!ws) {
+        return false
       }
-
-      connection.send(JSON.stringify(data))
+      return ws?.readyState === ws.OPEN
     },
-    [connection]
-  )
-
-  const close = () => {
-    connection?.addEventListener('close', () => {
-      setIsConnected(false)
-    })
-    connection?.close()
   }
-
-  return { isConnected, send, close, connection }
 }
