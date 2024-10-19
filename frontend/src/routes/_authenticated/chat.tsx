@@ -8,18 +8,9 @@ export const Route = createFileRoute('/_authenticated/chat')({
 
 export function Chat() {
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 pb-12 pt-5 lg:px-8">
-      <div className="mt-4 p-2 sm:mx-auto sm:w-full h-[620px] flex flex-row space-x-6 bg-neutral-700 scroll-smooth">
-        <Contacts />
-        <div className="basic-3/4">
-          <div className="sm:w-full sm:max-w-sm">
-            <h1 className="text-xl leading-9 tracking-tight text-gray-100">
-              Chat
-            </h1>
-          </div>
-          <MainChat />
-        </div>
-      </div>
+    <div className="p-5 max-w-7xl m-auto flex flex-row h-[52rem] space-x-6 bg-neutral-700">
+      <Contacts />
+      <MainChat />
     </div>
   )
 }

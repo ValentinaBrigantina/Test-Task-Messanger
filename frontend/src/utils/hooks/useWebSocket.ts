@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 
 export type ConnectionCb = (event: MessageEvent<any>) => void
 
-interface iUseWebSocket {
+interface IUseWebSocket {
   isConnected: () => boolean
   send: (data: Record<string, any>) => void
   close: () => void
@@ -12,7 +12,7 @@ interface iUseWebSocket {
 
 let ws: WebSocket | null = null
 
-export const useWebSocket = (): iUseWebSocket => {
+export const useWebSocket = (): IUseWebSocket => {
   useEffect(() => {
     if (!ws) {
       ws = api.ws.$ws()

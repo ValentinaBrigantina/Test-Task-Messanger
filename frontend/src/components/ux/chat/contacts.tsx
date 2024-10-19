@@ -46,7 +46,7 @@ export function Contacts() {
   }, [contacts, isWsReady])
 
   return (
-    <div className="basis-1/4 flex-none">
+    <div className="basis-1/4 flex-none max-w-60">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <h1 className="text-xl leading-9 tracking-tight text-gray-100">
           Contacts

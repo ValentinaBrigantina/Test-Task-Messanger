@@ -43,7 +43,7 @@ export function SendMessageForm({}: ISendMessageFormProps) {
   }
 
   return (
-    <div className="grid w-full gap-1.5">
+    <div className="grid w-full gap-1.5 sticky bottom-0">
       <form
         className="space-y-6"
         onSubmit={(e) => {

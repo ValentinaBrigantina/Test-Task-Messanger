@@ -26,7 +26,7 @@ function NavBar() {
   })
 
   return (
-    <div className="p-2 flex items-center justify-between max-w-2xl m-auto">
+    <div className="p-2 flex items-center justify-between max-w-7xl m-auto">
       <Link to="/">
         <h1 className="text-2xl font-bold">Test Task Messenger</h1>
       </Link>
@@ -34,7 +34,7 @@ function NavBar() {
         <Link to="/chat" className="[&.active]:font-bold">
           Chat
         </Link>
-        <Link to="/profile" className="[&.active]:font-bold">
+        <Link to="/profile" className="[&.active]:font-bold mx-2">
           {userData ? <UserAvatar user={userData?.user} /> : 'Profile'}
         </Link>
         {userData && <LogoutButton refetch={refetch} />}
