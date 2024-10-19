@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { userQueryOptions } from '@/lib/api'
 import { WsTextDataFromClient } from '@server/sharedTypes'
-import { wsChat } from '@server/helpers/constants'
+import { Ws } from '@server/helpers/constants'
 
 export interface ISendMessageFormProps {
   isWSReady: boolean
@@ -25,7 +25,7 @@ export function SendMessageForm({
       if (isWSReady && userData) {
         const messageData: WsTextDataFromClient = {
           ...value,
-          eventType: wsChat,
+          eventType: Ws.Chat,
           isChat: true,
           authorID: userData.user.id,
         }

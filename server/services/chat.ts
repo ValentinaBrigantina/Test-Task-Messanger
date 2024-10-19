@@ -5,6 +5,7 @@ import { db } from '../db'
 import {
   messages as messagesTable,
   type MessageSchemaInsert,
+  type MessageSchemaSelect,
 } from '../db/schema/messages'
 import { users as usersTable } from '../db/schema/users'
 import type {
@@ -13,11 +14,11 @@ import type {
   WsTextDataFromApi,
 } from '../sharedTypes'
 import { getUserByID } from './user'
-import { wsChat } from '../helpers/constants'
+import { Ws } from '../../frontend/src/utils/constants'
 
 export const saveMessage = async (
   data: MessageSchemaInsert
-): Promise<MessageSchemaInsert> => {
+): Promise<MessageSchemaSelect> => {
   if (!data.channelID && !data.target && !data.isChat) {
     throw new HTTPException(400, {
       message: 'channelID or target required if not chat',
@@ -62,7 +63,7 @@ export const getMessagesForChat = (): Promise<MessageSchema[]> =>
 export const getMessageWithAuthorProfile = async ({
   authorID,
   ...dataMessage
-}: MessageSchemaInsert): Promise<WsTextDataFromApi> => {
+}: MessageSchemaSelect): Promise<WsTextDataFromApi> => {
   const { password, ...author } = await getUserByID(authorID)
-  return { eventType: wsChat, message: { ...dataMessage, author } }
+  return { eventType: Ws.Chat, message: { ...dataMessage, author } }
 }

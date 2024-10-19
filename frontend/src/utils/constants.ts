@@ -1,1 +1,4 @@
-export const wsChat = 'chat'
+export enum Ws {
+    Chat = 'chat',
+    Contact = 'contact'
+}

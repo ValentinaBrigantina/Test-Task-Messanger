@@ -9,7 +9,7 @@ import { authRoute } from './routes/auth'
 import { profileRoute } from './routes/profile'
 import { chatRoute } from './routes/chat'
 import { wsHandler } from './helpers/wsHandler'
-import { wsChat } from './helpers/constants'
+import { Ws } from '../frontend/src/utils/constants'
 
 const app = new Hono()
 const { upgradeWebSocket, websocket } = createBunWebSocket()
@@ -26,7 +26,7 @@ const apiRoutes = app
       onOpen(_, ws) {
 
         const rawWs = ws.raw as ServerWebSocket
-        rawWs.subscribe(wsChat)
+        rawWs.subscribe(Ws.Chat)
       },
     }))
   )

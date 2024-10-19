@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { MessageSchema, WsTextDataFromApi } from '@server/sharedTypes'
-import { wsChat } from '@server/helpers/constants'
 import { getMessagesQueryOptions } from '@/lib/api'
 import { formatDate, IDate } from '@/utils/helpers.ts/formatDate'
 import { Message } from './message'
+import { Ws } from '@/utils/constants'
 
 interface IMessagesProps {
   connection: WebSocket | undefined
@@ -36,7 +36,7 @@ export function Messages({ connection }: IMessagesProps) {
         const data: WsTextDataFromApi = JSON.parse(event.data)
 
         switch (data.eventType) {
-          case wsChat:
+          case Ws.Chat:
             setMessages([...messages, data.message])
             break
 
