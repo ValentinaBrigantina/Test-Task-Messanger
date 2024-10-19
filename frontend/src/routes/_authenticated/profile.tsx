@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { userQueryOptions } from '@/lib/api'
-import { UpdateAvatarForm } from '@/components/ux/updateAvatarForm'
-import { UpdatePasswordForm } from '@/components/ux/updatePasswordForm'
+import { UpdateAvatarForm } from '@/components/ux/profile/updateAvatarForm'
+import { UpdatePasswordForm } from '@/components/ux/profile/updatePasswordForm'
 
 export const Route = createFileRoute('/_authenticated/profile')({
   component: Profile,

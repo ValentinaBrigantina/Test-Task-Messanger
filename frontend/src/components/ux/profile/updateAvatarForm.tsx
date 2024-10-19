@@ -1,16 +1,16 @@
-import { updateAvatar } from '@/lib/api'
-import { Label } from '@radix-ui/react-label'
+import type { UseQueryResult } from '@tanstack/react-query'
 import { useForm } from '@tanstack/react-form'
 import { toast } from 'sonner'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
-import type { UseQueryResult } from '@tanstack/react-query'
+import { updateAvatar } from '@/lib/api'
+import { Label } from '@radix-ui/react-label'
+import { Input } from '../../ui/input'
+import { Button } from '../../ui/button'
 
-interface UpdateAvatarFormProps {
-  refetch: UseQueryResult['refetch'];
+interface IUpdateAvatarFormProps {
+  refetch: UseQueryResult['refetch']
 }
 
-export function UpdateAvatarForm({ refetch }: UpdateAvatarFormProps) {
+export function UpdateAvatarForm({ refetch }: IUpdateAvatarFormProps) {
   const form = useForm({
     defaultValues: {
       avatar: null,
@@ -58,7 +58,6 @@ export function UpdateAvatarForm({ refetch }: UpdateAvatarFormProps) {
                   name={field.name}
                   type="file"
                   required
-                  onBlur={field.handleBlur}
                   onChange={async (e) => {
                     if (e.target.files?.[0]) {
                       form.setFieldValue('avatar', e.target.files[0] as any)
@@ -72,7 +71,11 @@ export function UpdateAvatarForm({ refetch }: UpdateAvatarFormProps) {
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
-            <Button className="flex w-full mt-8" type="submit" disabled={!canSubmit}>
+            <Button
+              className="flex w-full mt-8"
+              type="submit"
+              disabled={!canSubmit}
+            >
               {isSubmitting ? '...' : 'Update photo'}
             </Button>
           )}

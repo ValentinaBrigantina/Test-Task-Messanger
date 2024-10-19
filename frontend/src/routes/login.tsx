@@ -53,15 +53,10 @@ function Login() {
                       id={field.name}
                       name={field.name}
                       value={field.state.value}
-                      onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       required
                       className="block ring-1 ring-inset ring-gray-300"
                     />
-                    {field.state.meta.isTouched &&
-                    field.state.meta.errors.length ? (
-                      <em>{field.state.meta.errors.join(', ')}</em>
-                    ) : null}
                   </>
                 )
               }}
@@ -76,7 +71,6 @@ function Login() {
                   <Input
                     id={field.name}
                     value={field.state.value}
-                    onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
                     required
                     className="block ring-1 ring-inset ring-gray-300"

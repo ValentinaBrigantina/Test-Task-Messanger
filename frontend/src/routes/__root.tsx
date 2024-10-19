@@ -2,17 +2,12 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
-  useNavigate,
 } from '@tanstack/react-router'
-import {
-  useQuery,
-  useQueryClient,
-  type QueryClient,
-} from '@tanstack/react-query'
+import { useQuery, type QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { UserAvatar } from '@/components/ux/userAvatar'
 import { userQueryOptions } from '@/lib/api'
-import { Button } from '@/components/ui/button'
+import { LogoutButton } from '@/components/ux/logoutButton'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -29,15 +24,6 @@ function NavBar() {
     ...userQueryOptions,
     enabled: !!token,
   })
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    localStorage.removeItem('Authorization')
-    queryClient.removeQueries()
-    refetch()
-    navigate({ to: '/login' })
-  }
 
   return (
     <div className="p-2 flex items-center justify-between max-w-2xl m-auto">
@@ -51,11 +37,7 @@ function NavBar() {
         <Link to="/profile" className="[&.active]:font-bold">
           {userData ? <UserAvatar user={userData?.user} /> : 'Profile'}
         </Link>
-        {userData && (
-          <Button className="ml-auto" onClick={handleLogout}>
-            Logout
-          </Button>
-        )}
+        {userData && <LogoutButton refetch={refetch} />}
       </div>
     </div>
   )

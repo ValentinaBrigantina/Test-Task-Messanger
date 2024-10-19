@@ -1,8 +1,8 @@
-import { Label } from '@radix-ui/react-label'
 import { useForm } from '@tanstack/react-form'
 import { toast } from 'sonner'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
+import { Label } from '@radix-ui/react-label'
+import { Input } from '../../ui/input'
+import { Button } from '../../ui/button'
 import { updatePassword } from '@/lib/api'
 
 export function UpdatePasswordForm() {
@@ -44,12 +44,13 @@ export function UpdatePasswordForm() {
             name="newPassword"
             children={(field) => (
               <>
-              <h3 className="mb-5 text-2xl leading-9 tracking-tight text-gray-100">Update your password</h3>
+                <h3 className="mb-5 text-2xl leading-9 tracking-tight text-gray-100">
+                  Update your password
+                </h3>
                 <Label htmlFor={field.name}>Your new password</Label>
                 <Input
                   id={field.name}
                   value={field.state.value}
-                  onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                   required
                   className="mb-5 block ring-1 ring-inset ring-gray-300"
@@ -65,7 +66,6 @@ export function UpdatePasswordForm() {
                 <Input
                   id={field.name}
                   value={field.state.value}
-                  onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                   required
                   className="block ring-1 ring-inset ring-gray-300"
@@ -77,7 +77,11 @@ export function UpdatePasswordForm() {
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
-            <Button className="flex w-full mt-8" type="submit" disabled={!canSubmit}>
+            <Button
+              className="flex w-full mt-8"
+              type="submit"
+              disabled={!canSubmit}
+            >
               {isSubmitting ? '...' : 'Update password'}
             </Button>
           )}

@@ -1,18 +1,40 @@
-import { FormApi, ReactFormApi } from '@tanstack/react-form'
+import { useForm } from '@tanstack/react-form'
+import { useQuery } from '@tanstack/react-query'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-
-interface FormData {
-  text: string
-}
+import { userQueryOptions } from '@/lib/api'
+import { WsTextDataFromClient } from '@server/sharedTypes'
+import { wsChat } from '@server/helpers/constants'
 
 export interface ISendMessageFormProps {
   isWSReady: boolean
   sendWSdata: (data: any) => void
-  form: FormApi<FormData> & ReactFormApi<FormData>
 }
 
-export function SendMessageForm({ form }: ISendMessageFormProps) {
+export function SendMessageForm({
+  isWSReady,
+  sendWSdata,
+}: ISendMessageFormProps) {
+  const { data: userData } = useQuery(userQueryOptions)
+
+  const form = useForm({
+    defaultValues: {
+      text: '',
+    },
+    onSubmit: async ({ value }) => {
+      if (isWSReady && userData) {
+        const messageData: WsTextDataFromClient = {
+          ...value,
+          eventType: wsChat,
+          isChat: true,
+          authorID: userData.user.id,
+        }
+        sendWSdata(messageData)
+        form.setFieldValue('text', '')
+      }
+    },
+  })
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       if (e.shiftKey) {
