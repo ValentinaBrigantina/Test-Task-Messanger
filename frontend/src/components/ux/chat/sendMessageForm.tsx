@@ -63,7 +63,7 @@ export function SendMessageForm({}: ISendMessageFormProps) {
                 onKeyDown={handleKeyDown}
                 required
                 placeholder="Type your message here."
-                className="block ring-1 ring-inset ring-gray-300"
+                className="block  ring-inset ring-background"
               />
             )}
           />

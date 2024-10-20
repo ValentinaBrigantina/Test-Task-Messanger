@@ -5,6 +5,7 @@ import { Contact } from './contact'
 import { WsActions } from '@/utils/constants'
 import { UserProfile, WsNewContactFromApi } from '@server/sharedTypes'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
+import { ContactSkeleton } from './skeletons/contactSkeleton'
 
 export function Contacts() {
   const queryClient = useQueryClient()
@@ -46,17 +47,24 @@ export function Contacts() {
   }, [contacts, isWsReady])
 
   return (
-    <div className="basis-1/4 flex-none max-w-60">
+    <div className="basis-1/4 flex-none">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h1 className="text-xl leading-9 tracking-tight text-gray-100">
+        <h1 className="text-xl leading-9 tracking-tight text-primary">
           Contacts
         </h1>
       </div>
-      <ul>
+      <ul className="h-[630px] rounded-md">
+        {contactsQuery.isLoading &&
+          Array.from({ length: 5 }).map((_, index) => (
+            <ContactSkeleton key={index} />
+          ))}
         {contactsQuery.isFetched &&
           contacts.map((contact) => {
             return <Contact contact={contact} key={contact.id} />
           })}
+          {(contacts.length === 0 && contactsQuery.isFetched) &&
+            <p className="text-ring m-2">Invite your friends to the app!</p>
+          }
       </ul>
     </div>
   )

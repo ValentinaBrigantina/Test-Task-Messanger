@@ -44,7 +44,7 @@ export function UpdatePasswordForm() {
             name="newPassword"
             children={(field) => (
               <>
-                <h3 className="mb-5 text-2xl leading-9 tracking-tight text-gray-100">
+                <h3 className="mb-5 text-2xl leading-9 tracking-tight text-primary">
                   Update your password
                 </h3>
                 <Label htmlFor={field.name}>Your new password</Label>

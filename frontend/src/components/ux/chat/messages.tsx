@@ -7,6 +7,7 @@ import { formatDate, IDate } from '@/utils/helpers.ts/formatDate'
 import { Message } from './message'
 import { WsActions } from '@/utils/constants'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
+import { MessageSkeleton } from './skeletons/messageSkeleton'
 
 export function Messages() {
   const { isConnected, subscribe } = useWebSocket()
@@ -49,12 +50,19 @@ export function Messages() {
 
   return (
     <ul>
+      {messagesQuery.isLoading &&
+        Array.from({ length: 7 }).map((_, index) => (
+          <MessageSkeleton key={index} />
+        ))}
       {messages.map((message) => {
         const date: IDate = message.createdAt
           ? formatDate(message.createdAt)
           : { day: '', time: '' }
         return <Message message={message} date={date} key={message.id} />
       })}
+      {(messages.length === 0 && messagesQuery.isFetched) && 
+      <p className="text-ring mx-2 my-5">Be the first to write a message!</p>
+      }
     </ul>
   )
 }

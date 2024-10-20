@@ -47,7 +47,6 @@ function Root() {
   return (
     <>
       <NavBar />
-      <hr />
       <Outlet />
       <Toaster />
     </>

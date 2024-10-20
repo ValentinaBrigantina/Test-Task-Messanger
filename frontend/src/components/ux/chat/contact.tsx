@@ -9,7 +9,7 @@ interface IContactProps {
 export function Contact({ contact }: IContactProps) {
   return (
     <li className="my-1">
-      <Card className="bg-background">
+      <Card className="bg-background border-background">
         <CardContent className="p-3">
           <ContactAvatar user={contact} />
         </CardContent>
@@ -17,3 +17,4 @@ export function Contact({ contact }: IContactProps) {
     </li>
   )
 }
+
