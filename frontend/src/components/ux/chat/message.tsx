@@ -1,10 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { UserAvatar } from '../userAvatar'
-import { MessageSchema } from '@server/sharedTypes'
+import { MessageSchemaWithAuthorData } from '@server/sharedTypes'
 import { IDate } from '@/utils/helpers.ts/formatDate'
 
 export interface IMessageProps {
-  message: MessageSchema
+  message: MessageSchemaWithAuthorData
   date: IDate
 }
 

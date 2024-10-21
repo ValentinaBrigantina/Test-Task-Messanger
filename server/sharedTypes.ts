@@ -1,5 +1,8 @@
 import { z } from 'zod'
-import type { MessageSchemaSelect } from './db/schema/messages'
+import type {
+  MessageSchemaInsert,
+  MessageSchemaSelect,
+} from './db/schema/messages'
 import { insertUserSchema, selectUserSchema } from './db/schema/users'
 
 export const authUserData = insertUserSchema.pick({
@@ -27,50 +30,52 @@ const userProfile = selectUserSchema.pick({
 export type UserProfile = z.infer<typeof userProfile>
 
 const payloadData = insertUserSchema.pick({
-    id: true,
-    name: true,
-  })
+  id: true,
+  name: true,
+})
 export type PayloadUserData = z.infer<typeof payloadData>
 
 export const fileSchema = z
-.instanceof(File)
-.refine(
-  (file) => {
-    return (
-      file.type === 'image/jpeg' ||
-      file.type === 'image/png' ||
-      file.type === 'image/gif' ||
-      file.type === 'image/svg'
-    )
-  },
-  { message: 'File must be in JPEG, PNG, GIF or SVG format' }
-)
-.refine(
-  (file) => {
-    const maxFileSize = 5 * 1024 * 1024
-    return file.size <= maxFileSize
-  },
-  { message: 'File size must not exceed 5 MB' }
-)
+  .instanceof(File)
+  .refine(
+    (file) => {
+      return (
+        file.type === 'image/jpeg' ||
+        file.type === 'image/png' ||
+        file.type === 'image/gif' ||
+        file.type === 'image/svg'
+      )
+    },
+    { message: 'File must be in JPEG, PNG, GIF or SVG format' }
+  )
+  .refine(
+    (file) => {
+      const maxFileSize = 5 * 1024 * 1024
+      return file.size <= maxFileSize
+    },
+    { message: 'File size must not exceed 5 MB' }
+  )
 export type ValidFile = z.infer<typeof fileSchema>
 
-export type MessageSchema = Omit<MessageSchemaSelect, 'authorID'> & {
+export type MessageSchemaWithAuthorData = Omit<
+  MessageSchemaSelect,
+  'authorID'
+> & {
   author: UserProfile
 }
 
 export type WsTextDataFromClient = {
-  eventType: string,
-  text: string,
-  isChat: boolean,
-  authorID: number,
+  eventType: string
+  message: MessageSchemaInsert
+  file?: File
 }
 
 export type WsTextDataFromApi = {
-  eventType: string,
-  message: MessageSchema,
+  eventType: string
+  message: MessageSchemaWithAuthorData
 }
 
 export type WsNewContactFromApi = {
-  eventType: string,
-  contact: UserProfile,
+  eventType: string
+  contact: UserProfile
 }

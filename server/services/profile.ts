@@ -4,6 +4,7 @@ import { users as usersTable } from '../db/schema/users'
 import { eq } from 'drizzle-orm'
 import { createHash } from './auth'
 import type { UserProfile } from '../sharedTypes'
+import { UploadsDir } from '../helpers/constants'
 
 export const updatePassword = async (
   userID: number,
@@ -16,9 +17,9 @@ export const updatePassword = async (
 
 export const uploadAvatar = async (file: File): Promise<string> => {
   const name = createUniqueName(file.name)
-  const path = await getPath(name)
+  const path = await getPath(name, UploadsDir.ProfileImage)
   await upload(file, path)
-  return getUrl(name)
+  return getUrl(name, UploadsDir.ProfileImage)
 }
 
 export const updateAvatar = async (

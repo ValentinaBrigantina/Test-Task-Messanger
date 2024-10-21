@@ -15,6 +15,20 @@
       "when": 1729094643049,
       "tag": "0001_steep_randall",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1729432962415,
+      "tag": "0002_giant_fixer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1729452472844,
+      "tag": "0003_kind_freak",
+      "breakpoints": true
     }
   ]
 }

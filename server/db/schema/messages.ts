@@ -12,11 +12,13 @@ import type { z } from 'zod'
 
 import { users } from './users'
 import { channels } from './channels'
-
+import { MessageType } from '../../helpers/constants'
 
 export const messages = pgTable('messages', {
   id: serial('id').primaryKey(),
-  text: text('text').notNull(),
+  type: integer('type').notNull().default(MessageType.Text),
+  text: text('text'),
+  src: text('src'),
   createdAt: timestamp('created_at', { mode: 'string' }).notNull().defaultNow(),
   authorID: integer('author_id')
     .references(() => users.id)

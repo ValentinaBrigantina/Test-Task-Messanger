@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getContactsQueryOptions } from '@/lib/api'
 import { Contact } from './contact'
-import { WsActions } from '@/utils/constants'
+import { WsAction } from '@/utils/constants'
 import { UserProfile, WsNewContactFromApi } from '@server/sharedTypes'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { ContactSkeleton } from './skeletons/contactSkeleton'
@@ -35,7 +35,7 @@ export function Contacts() {
         const data: WsNewContactFromApi = JSON.parse(event.data)
 
         switch (data.eventType) {
-          case WsActions.UpdateContacts:
+          case WsAction.UpdateContacts:
             setContacts([...contacts, data.contact])
             break
 
@@ -62,9 +62,9 @@ export function Contacts() {
           contacts.map((contact) => {
             return <Contact contact={contact} key={contact.id} />
           })}
-          {(contacts.length === 0 && contactsQuery.isFetched) &&
-            <p className="text-ring m-2">Invite your friends to the app!</p>
-          }
+        {contacts.length === 0 && contactsQuery.isFetched && (
+          <p className="text-ring m-2">Invite your friends to the app!</p>
+        )}
       </ul>
     </div>
   )

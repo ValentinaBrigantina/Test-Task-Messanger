@@ -9,12 +9,12 @@ import {
 } from '../db/schema/messages'
 import { users as usersTable } from '../db/schema/users'
 import type {
-  MessageSchema,
+  MessageSchemaWithAuthorData,
   UserProfile,
   WsTextDataFromApi,
 } from '../sharedTypes'
 import { getUserByID } from './user'
-import { WsActions } from '../../frontend/src/utils/constants'
+import { WsAction } from '../../frontend/src/utils/constants'
 
 export const saveMessage = async (
   data: MessageSchemaInsert
@@ -39,7 +39,7 @@ export const getContacts = (id: number): Promise<UserProfile[]> =>
     .from(usersTable)
     .where(ne(usersTable.id, id))
 
-export const getMessagesForChat = (): Promise<MessageSchema[]> =>
+export const getMessagesForChat = (): Promise<MessageSchemaWithAuthorData[]> =>
   db
     .select({
       id: messagesTable.id,
@@ -54,6 +54,8 @@ export const getMessagesForChat = (): Promise<MessageSchema[]> =>
       isChat: messagesTable.isChat,
       target: messagesTable.target,
       channelID: messagesTable.channelID,
+      src: messagesTable.src,
+      type: messagesTable.type,
     })
     .from(messagesTable)
     .where(eq(messagesTable.isChat, true))
@@ -66,7 +68,7 @@ export const getMessageWithAuthorProfile = async ({
 }: MessageSchemaSelect): Promise<WsTextDataFromApi> => {
   const { password, ...author } = await getUserByID(authorID)
   return {
-    eventType: WsActions.UpdateChat,
+    eventType: WsAction.UpdateChat,
     message: { ...dataMessage, author },
   }
 }

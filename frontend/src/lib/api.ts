@@ -5,7 +5,7 @@ import {
   type AuthSchema,
   DataUpdatePassword,
   JwtToken,
-  MessageSchema,
+  MessageSchemaWithAuthorData,
   UserProfile,
 } from '@server/sharedTypes'
 import { apiHost } from '@/utils/config'
@@ -97,7 +97,7 @@ export async function registration(value: AuthSchema): Promise<void> {
   }
 }
 
-export async function getMessages(): Promise<MessageSchema[]> {
+export async function getMessages(): Promise<MessageSchemaWithAuthorData[]> {
   const headers = getAuthHeaders()
   const res = await api.chat.messages.$get({}, headers)
   if (!res.ok) {

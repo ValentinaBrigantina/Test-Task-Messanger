@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { MessageSchema, WsTextDataFromApi } from '@server/sharedTypes'
+import {
+  MessageSchemaWithAuthorData,
+  WsTextDataFromApi,
+} from '@server/sharedTypes'
 import { getMessagesQueryOptions } from '@/lib/api'
 import { formatDate, IDate } from '@/utils/helpers.ts/formatDate'
 import { Message } from './message'
-import { WsActions } from '@/utils/constants'
+import { WsAction } from '@/utils/constants'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { MessageSkeleton } from './skeletons/messageSkeleton'
 
@@ -13,7 +16,7 @@ export function Messages() {
   const { isConnected, subscribe } = useWebSocket()
   const queryClient = useQueryClient()
   const messagesQuery = useQuery(getMessagesQueryOptions)
-  const [messages, setMessages] = useState<MessageSchema[]>([])
+  const [messages, setMessages] = useState<MessageSchemaWithAuthorData[]>([])
   const isWsReady = isConnected()
 
   useEffect(() => {
@@ -37,7 +40,7 @@ export function Messages() {
         const data: WsTextDataFromApi = JSON.parse(event.data)
 
         switch (data.eventType) {
-          case WsActions.UpdateChat:
+          case WsAction.UpdateChat:
             setMessages([...messages, data.message])
             break
 
@@ -60,9 +63,9 @@ export function Messages() {
           : { day: '', time: '' }
         return <Message message={message} date={date} key={message.id} />
       })}
-      {(messages.length === 0 && messagesQuery.isFetched) && 
-      <p className="text-ring mx-2 my-5">Be the first to write a message!</p>
-      }
+      {messages.length === 0 && messagesQuery.isFetched && (
+        <p className="text-ring mx-2 my-5">Be the first to write a message!</p>
+      )}
     </ul>
   )
 }
