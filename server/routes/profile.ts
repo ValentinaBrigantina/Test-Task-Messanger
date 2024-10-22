@@ -2,15 +2,19 @@ import { Hono } from 'hono'
 import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
 import { updateAvatar, updatePassword, uploadAvatar } from '../services/profile'
-import { fileSchema, dataUpdatePassword, type ValidFile, type UserProfile } from '../sharedTypes'
+import { dataUpdatePassword, type UserProfile } from '../sharedTypes'
 import { zValidator } from '@hono/zod-validator'
 import { compareHash } from '../services/auth'
+import {
+  imageSchema,
+  type ValidImage,
+} from '../helpers/customValidation/imageSchema'
 
 export const profileRoute = new Hono()
 
   .put(
     '/password',
-    authMiddleware, 
+    authMiddleware,
     getUser,
     zValidator('json', dataUpdatePassword),
     async (c) => {
@@ -26,11 +30,11 @@ export const profileRoute = new Hono()
 
   .put('/avatar', authMiddleware, getUser, async (c) => {
     const formData = await c.req.formData()
-    const avatar = formData.get('avatar') as ValidFile | null
+    const avatar = formData.get('avatar') as ValidImage | null
     if (!avatar) {
       return c.json({ error: 'No file uploaded' }, 400)
     }
-    const parseResult = fileSchema.safeParse(avatar)
+    const parseResult = imageSchema.safeParse(avatar)
     if (!parseResult.success) {
       return c.json({ error: parseResult.error.errors }, 400)
     }

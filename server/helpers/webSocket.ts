@@ -5,29 +5,12 @@ import { WsAction } from './constants'
 import type { WsTextDataFromClient } from '../sharedTypes'
 import type { MessageSchemaSelect } from '../db/schema/messages'
 
-const readBlobData = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsText(blob)
-  })
-}
-
 export const wsHandler = async (
   event: MessageEvent<WSMessageReceive>,
   ws: WSContext
 ) => {
-  let dataMessage: string
-  if (event.data instanceof Blob) {
-    dataMessage = await readBlobData(event.data)
-  } else if (typeof event.data === 'string') {
-    dataMessage = event.data
-  } else {
-    throw new Error('Unsupported message format')
-  }
-
-  const data: WsTextDataFromClient = JSON.parse(dataMessage)
+  const dataString = event.data as string
+  const data: WsTextDataFromClient = JSON.parse(dataString)
   switch (data.eventType) {
     case WsAction.UpdateChat:
       const savedMessage: MessageSchemaSelect = await saveMessage(data.message)

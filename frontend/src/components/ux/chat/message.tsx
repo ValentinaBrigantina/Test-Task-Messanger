@@ -13,7 +13,11 @@ export function Message({ message, date }: IMessageProps) {
     <li className="my-1">
       <Card className="bg-background border-background flex px-2">
         <UserAvatar user={message.author} />
-        <CardContent className="p-3 grow">{message.text}</CardContent>
+        <CardContent className="p-3 grow">
+          {message.src && <img className="mx-auto" src={message.src} alt="" />}
+
+          {message.text}
+        </CardContent>
         <div className="bg-background flex flex-none px-2 items-center">
           <div className="flex flex-col content-center text-ring">
             <p className="text-xs">{date.time}</p>

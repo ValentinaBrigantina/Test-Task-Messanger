@@ -1,32 +1,66 @@
+import { useRef } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { userQueryOptions } from '@/lib/api'
+import { sendImageInMessage, userQueryOptions } from '@/lib/api'
 import { WsTextDataFromClient } from '@server/sharedTypes'
 import { MessageType, WsAction } from '@server/helpers/constants'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 
-export interface ISendMessageFormProps {}
+type FormData = {
+  text: string | undefined
+  image: File | null
+}
 
-export function SendMessageForm({}: ISendMessageFormProps) {
+export function SendMessageForm() {
   const { data: userData } = useQuery(userQueryOptions)
   const { isConnected, send } = useWebSocket()
   const isWsReady = isConnected()
 
-  const form = useForm({
+  const inputFileRef = useRef<HTMLInputElement>(null)
+
+  const form = useForm<FormData>({
     defaultValues: {
       text: '',
+      image: null,
     },
-    onSubmit: ({ value }) => {
+    onSubmit: async ({ value }) => {
       if (isWsReady && userData) {
         const messageData: WsTextDataFromClient = {
           eventType: WsAction.UpdateChat,
           message: {
-            ...value,
+            text: value.text,
             type: MessageType.Text,
             isChat: true,
             authorID: userData.user.id,
+          },
+        }
+
+        if (value.image) {
+          const formData = new FormData()
+          formData.set('image', value.image)
+          try {
+            const src = await sendImageInMessage(formData)
+            messageData.message.src = src
+            messageData.message.type = MessageType.Image
+
+            form.setFieldValue('image', null)
+            if (inputFileRef.current) {
+              inputFileRef.current.value = ''
+            }
+          } catch (error) {
+            form.setFieldValue('image', null)
+            if (inputFileRef.current) {
+              inputFileRef.current.value = ''
+            }
+            toast.error('Failed to send image', {
+              style: {
+                background: 'IndianRed',
+              },
+            })
           }
         }
         send(messageData)
@@ -42,6 +76,14 @@ export function SendMessageForm({}: ISendMessageFormProps) {
       } else {
         form.handleSubmit()
       }
+    }
+  }
+
+  const handleOnChange = (e: React.FormEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLInputElement
+    const image = target.files?.[0]
+    if (image) {
+      form.setFieldValue('image', image)
     }
   }
 
@@ -64,10 +106,24 @@ export function SendMessageForm({}: ISendMessageFormProps) {
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                required
                 placeholder="Type your message here."
                 className="block  ring-inset ring-background"
               />
+            )}
+          />
+          <form.Field
+            name="image"
+            children={(field) => (
+              <>
+                <Input
+                  className="block ring-1 ring-inset ring-gray-300"
+                  id={field.name}
+                  name={field.name}
+                  type="file"
+                  onChange={handleOnChange}
+                  ref={inputFileRef}
+                />
+              </>
             )}
           />
           <form.Subscribe

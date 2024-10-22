@@ -1,40 +1,47 @@
-import type { UseQueryResult } from '@tanstack/react-query'
+import { useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useForm } from '@tanstack/react-form'
 import { toast } from 'sonner'
-import { updateAvatar } from '@/lib/api'
+import { updateAvatar, userQueryOptions } from '@/lib/api'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '../../ui/input'
 import { Button } from '../../ui/button'
 
-interface IUpdateAvatarFormProps {
-  refetch: UseQueryResult['refetch']
-}
+export function UpdateAvatarForm() {
+  const { refetch } = useQuery(userQueryOptions)
 
-export function UpdateAvatarForm({ refetch }: IUpdateAvatarFormProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const form = useForm({
     defaultValues: {
-      avatar: null,
+      avatar: null as File | null,
     },
     onSubmit: async ({ value }) => {
       const formData = new FormData()
       value.avatar && formData.set('avatar', value.avatar)
       try {
         await updateAvatar(formData)
-        toast.success('Profile photo updated successfully', {
-          style: {
-            background: 'DarkGrey',
-          },
-        })
+
+        form.setFieldValue('avatar', null)
+        if (inputRef.current) {
+          inputRef.current.value = ''
+        }
+
+        toast.success('Profile photo updated successfully')
         refetch()
       } catch (error) {
-        toast.error('Failed to update your profile photo', {
-          style: {
-            background: 'IndianRed',
-          },
-        })
+        toast.error('Failed to update your profile photo')
       }
     },
   })
+
+  const handleOnChange = (e: React.FormEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (file) {
+      form.setFieldValue('avatar', file)
+    }
+  }
 
   return (
     <div className="mt-5 sm:mx-auto sm:w-full sm:max-w-sm">
@@ -58,11 +65,8 @@ export function UpdateAvatarForm({ refetch }: IUpdateAvatarFormProps) {
                   name={field.name}
                   type="file"
                   required
-                  onChange={async (e) => {
-                    if (e.target.files?.[0]) {
-                      form.setFieldValue('avatar', e.target.files[0] as any)
-                    }
-                  }}
+                  onChange={handleOnChange}
+                  ref={inputRef}
                 />
               </>
             )}

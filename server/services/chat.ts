@@ -15,6 +15,8 @@ import type {
 } from '../sharedTypes'
 import { getUserByID } from './user'
 import { WsAction } from '../../frontend/src/utils/constants'
+import { createUniqueName, getPath, getUrl, upload } from './upload'
+import { UploadsDir } from '../helpers/constants'
 
 export const saveMessage = async (
   data: MessageSchemaInsert
@@ -71,4 +73,11 @@ export const getMessageWithAuthorProfile = async ({
     eventType: WsAction.UpdateChat,
     message: { ...dataMessage, author },
   }
+}
+
+export const uploadImage = async (file: File): Promise<string> => {
+    const name = createUniqueName(file.name)
+    const path = await getPath(name, UploadsDir.ChatImage)
+    await upload(file, path)
+    return getUrl(name, UploadsDir.ChatImage)
 }

@@ -35,28 +35,6 @@ const payloadData = insertUserSchema.pick({
 })
 export type PayloadUserData = z.infer<typeof payloadData>
 
-export const fileSchema = z
-  .instanceof(File)
-  .refine(
-    (file) => {
-      return (
-        file.type === 'image/jpeg' ||
-        file.type === 'image/png' ||
-        file.type === 'image/gif' ||
-        file.type === 'image/svg'
-      )
-    },
-    { message: 'File must be in JPEG, PNG, GIF or SVG format' }
-  )
-  .refine(
-    (file) => {
-      const maxFileSize = 5 * 1024 * 1024
-      return file.size <= maxFileSize
-    },
-    { message: 'File size must not exceed 5 MB' }
-  )
-export type ValidFile = z.infer<typeof fileSchema>
-
 export type MessageSchemaWithAuthorData = Omit<
   MessageSchemaSelect,
   'authorID'
@@ -67,7 +45,6 @@ export type MessageSchemaWithAuthorData = Omit<
 export type WsTextDataFromClient = {
   eventType: string
   message: MessageSchemaInsert
-  file?: File
 }
 
 export type WsTextDataFromApi = {

@@ -1,6 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { userQueryOptions } from '@/lib/api'
 import { UpdateAvatarForm } from '@/components/ux/profile/updateAvatarForm'
 import { UpdatePasswordForm } from '@/components/ux/profile/updatePasswordForm'
 
@@ -9,8 +7,6 @@ export const Route = createFileRoute('/_authenticated/profile')({
 })
 
 export function Profile() {
-  const { refetch } = useQuery(userQueryOptions)
-
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center p-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -18,8 +14,7 @@ export function Profile() {
           Setting profile
         </h1>
       </div>
-
-      <UpdateAvatarForm refetch={refetch} />
+      <UpdateAvatarForm />
       <UpdatePasswordForm />
     </div>
   )

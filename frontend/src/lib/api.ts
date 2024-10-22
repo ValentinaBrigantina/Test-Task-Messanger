@@ -73,6 +73,23 @@ export async function updateAvatar(formData: FormData) {
   return res.json()
 }
 
+export async function sendImageInMessage(formData: FormData): Promise<string> {
+  const token = localStorage.getItem('Authorization')
+
+  const res = await fetch(`${apiHost}/api/chat/message`, {
+    method: 'POST',
+    headers: {
+      ...(token && { Authorization: token }),
+    },
+    body: formData,
+  })
+
+  if (!res.ok) {
+    throw new Error('Server error')
+  }
+  return res.json()
+}
+
 export async function updatePassword(value: DataUpdatePassword) {
   const headers = getAuthHeaders()
   const res = await api.profile.password.$put({ json: value }, headers)

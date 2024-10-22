@@ -21,11 +21,13 @@ import { Route as AuthenticatedChatImport } from './routes/_authenticated/chat'
 // Create/Update Routes
 
 const RegisterRoute = RegisterImport.update({
+  id: '/register',
   path: '/register',
   getParentRoute: () => rootRoute,
 } as any)
 
 const LoginRoute = LoginImport.update({
+  id: '/login',
   path: '/login',
   getParentRoute: () => rootRoute,
 } as any)
@@ -36,16 +38,19 @@ const AuthenticatedRoute = AuthenticatedImport.update({
 } as any)
 
 const AuthenticatedIndexRoute = AuthenticatedIndexImport.update({
+  id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 
 const AuthenticatedProfileRoute = AuthenticatedProfileImport.update({
+  id: '/profile',
   path: '/profile',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 
 const AuthenticatedChatRoute = AuthenticatedChatImport.update({
+  id: '/chat',
   path: '/chat',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
@@ -101,15 +106,80 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
-export const routeTree = rootRoute.addChildren({
-  AuthenticatedRoute: AuthenticatedRoute.addChildren({
-    AuthenticatedChatRoute,
-    AuthenticatedProfileRoute,
-    AuthenticatedIndexRoute,
-  }),
-  LoginRoute,
-  RegisterRoute,
-})
+interface AuthenticatedRouteChildren {
+  AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedChatRoute: AuthenticatedChatRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
+export interface FileRoutesByFullPath {
+  '': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/chat': typeof AuthenticatedChatRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/': typeof AuthenticatedIndexRoute
+}
+
+export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/chat': typeof AuthenticatedChatRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/': typeof AuthenticatedIndexRoute
+}
+
+export interface FileRoutesById {
+  __root__: typeof rootRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/_authenticated/chat': typeof AuthenticatedChatRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+}
+
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '' | '/login' | '/register' | '/chat' | '/profile' | '/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/login' | '/register' | '/chat' | '/profile' | '/'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/login'
+    | '/register'
+    | '/_authenticated/chat'
+    | '/_authenticated/profile'
+    | '/_authenticated/'
+  fileRoutesById: FileRoutesById
+}
+
+export interface RootRouteChildren {
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
+}
+
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
+}
+
+export const routeTree = rootRoute
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* prettier-ignore-end */
 
