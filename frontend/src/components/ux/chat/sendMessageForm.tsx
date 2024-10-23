@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { IoIosAttach } from "react-icons/io"
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -110,35 +111,40 @@ export function SendMessageForm() {
           form.handleSubmit()
         }}
       >
-        <div>
-          <form.Field
-            name="text"
-            children={(field) => (
-              <Textarea
-                id={field.name}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your message here."
-                className="block  ring-inset ring-background"
-              />
-            )}
-          />
-          <form.Field
-            name="image"
-            children={(field) => (
-              <>
-                <Input
-                  className="block ring-1 ring-inset ring-gray-300"
+        <div className="border bg-background rounded-md">
+          <div className="flex items-center">
+            <form.Field
+              name="text"
+              children={(field) => (
+                <Textarea
                   id={field.name}
-                  name={field.name}
-                  type="file"
-                  onChange={handleOnChange}
-                  ref={inputFileRef}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type your message here."
+                  className="block ring-inset "
                 />
-              </>
-            )}
-          />
+              )}
+            />
+            <form.Field
+              name="image"
+              children={(field) => (
+                <div className="w-8 h-10 relative">
+                  <IoIosAttach className="w-full h-full text-ring" />
+                  <Input
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    id={field.name}
+                    name={field.name}
+                    type="file"
+                    onChange={handleOnChange}
+                    ref={inputFileRef}
+                    
+                  />
+                </div>
+              )}
+            />
+          </div>
+
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
             children={([canSubmit, isSubmitting]) => (
