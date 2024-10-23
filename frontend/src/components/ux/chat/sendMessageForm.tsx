@@ -9,6 +9,8 @@ import { sendImageInMessage, userQueryOptions } from '@/lib/api'
 import { WsTextDataFromClient } from '@server/sharedTypes'
 import { MessageType, WsAction } from '@server/helpers/constants'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
+import { messageFormSchema } from '@/utils/customValidation/messageFormSchema'
+import { imageSchema } from '@server/helpers/customValidation/imageSchema'
 
 type FormData = {
   text: string | undefined
@@ -28,6 +30,11 @@ export function SendMessageForm() {
       image: null,
     },
     onSubmit: async ({ value }) => {
+      const parsedResult = messageFormSchema.safeParse(value)
+      if (!parsedResult.success) {
+        return
+      }
+
       if (isWsReady && userData) {
         const messageData: WsTextDataFromClient = {
           eventType: WsAction.UpdateChat,
@@ -40,6 +47,16 @@ export function SendMessageForm() {
         }
 
         if (value.image) {
+          const imageValidationResult = imageSchema.safeParse(value.image)
+          if (!imageValidationResult.success) {
+            toast.error(imageValidationResult.error.errors[0].message)
+            form.setFieldValue('image', null)
+            if (inputFileRef.current) {
+              inputFileRef.current.value = ''
+            }
+            return
+          }
+
           const formData = new FormData()
           formData.set('image', value.image)
           try {
@@ -56,11 +73,7 @@ export function SendMessageForm() {
             if (inputFileRef.current) {
               inputFileRef.current.value = ''
             }
-            toast.error('Failed to send image', {
-              style: {
-                background: 'IndianRed',
-              },
-            })
+            toast.error('Failed to send image')
           }
         }
         send(messageData)
