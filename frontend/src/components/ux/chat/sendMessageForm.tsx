@@ -1,8 +1,8 @@
-import { useRef } from 'react'
+import { useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { IoIosAttach } from "react-icons/io"
+import { IoIosAttach } from 'react-icons/io'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,8 @@ export function SendMessageForm() {
   const { isConnected, send } = useWebSocket()
   const isWsReady = isConnected()
 
-  const inputFileRef = useRef<HTMLInputElement>(null)
+  const [inputFile, setInputFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -52,9 +53,8 @@ export function SendMessageForm() {
           if (!imageValidationResult.success) {
             toast.error(imageValidationResult.error.errors[0].message)
             form.setFieldValue('image', null)
-            if (inputFileRef.current) {
-              inputFileRef.current.value = ''
-            }
+            setInputFile(null)
+            setImagePreviewUrl(null)
             return
           }
 
@@ -66,14 +66,12 @@ export function SendMessageForm() {
             messageData.message.type = MessageType.Image
 
             form.setFieldValue('image', null)
-            if (inputFileRef.current) {
-              inputFileRef.current.value = ''
-            }
+            setInputFile(null)
+            setImagePreviewUrl(null)
           } catch (error) {
             form.setFieldValue('image', null)
-            if (inputFileRef.current) {
-              inputFileRef.current.value = ''
-            }
+            setInputFile(null)
+            setImagePreviewUrl(null)
             toast.error('Failed to send image')
           }
         }
@@ -98,6 +96,13 @@ export function SendMessageForm() {
     const image = target.files?.[0]
     if (image) {
       form.setFieldValue('image', image)
+      setInputFile(image)
+
+      const reader = new FileReader()
+      reader.onload = () => {
+        setImagePreviewUrl(reader.result as string)
+      }
+      reader.readAsDataURL(image)
     }
   }
 
@@ -113,19 +118,12 @@ export function SendMessageForm() {
       >
         <div className="border bg-background rounded-md">
           <div className="flex items-center">
-            <form.Field
-              name="text"
-              children={(field) => (
-                <Textarea
-                  id={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type your message here."
-                  className="block ring-inset "
-                />
-              )}
-            />
+            {
+            inputFile && imagePreviewUrl &&
+            <div>
+              <img src={imagePreviewUrl} alt="Preview" className="max-w-20 max-h-20" />
+              </div>
+            }
             <form.Field
               name="image"
               children={(field) => (
@@ -137,10 +135,21 @@ export function SendMessageForm() {
                     name={field.name}
                     type="file"
                     onChange={handleOnChange}
-                    ref={inputFileRef}
-                    
                   />
                 </div>
+              )}
+            />
+            <form.Field
+              name="text"
+              children={(field) => (
+                <Textarea
+                  id={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type your message here."
+                  className="block ring-inset "
+                />
               )}
             />
           </div>
