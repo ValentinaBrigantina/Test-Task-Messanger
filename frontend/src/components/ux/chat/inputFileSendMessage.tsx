@@ -25,11 +25,8 @@ export function FileInputSendMessage({
     onChange(file)
 
     if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        setImagePreviewUrl(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+      const imageUrl = URL.createObjectURL(file)
+      setImagePreviewUrl(imageUrl)
     }
   }
 
