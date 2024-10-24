@@ -1,9 +1,6 @@
-import { useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { IoIosAttach } from 'react-icons/io'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { sendImageInMessage, userQueryOptions } from '@/lib/api'
@@ -12,6 +9,7 @@ import { MessageType, WsAction } from '@server/helpers/constants'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { messageFormSchema } from '@/utils/customValidation/messageFormSchema'
 import { imageSchema } from '@server/helpers/customValidation/imageSchema'
+import { FileInputSendMessage } from './inputFileSendMessage'
 
 type FormData = {
   text: string | undefined
@@ -22,9 +20,6 @@ export function SendMessageForm() {
   const { data: userData } = useQuery(userQueryOptions)
   const { isConnected, send } = useWebSocket()
   const isWsReady = isConnected()
-
-  const [inputFile, setInputFile] = useState<File | null>(null)
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -53,25 +48,17 @@ export function SendMessageForm() {
           if (!imageValidationResult.success) {
             toast.error(imageValidationResult.error.errors[0].message)
             form.setFieldValue('image', null)
-            setInputFile(null)
-            setImagePreviewUrl(null)
             return
           }
-
           const formData = new FormData()
           formData.set('image', value.image)
           try {
             const src = await sendImageInMessage(formData)
             messageData.message.src = src
             messageData.message.type = MessageType.Image
-
             form.setFieldValue('image', null)
-            setInputFile(null)
-            setImagePreviewUrl(null)
           } catch (error) {
             form.setFieldValue('image', null)
-            setInputFile(null)
-            setImagePreviewUrl(null)
             toast.error('Failed to send image')
           }
         }
@@ -91,21 +78,6 @@ export function SendMessageForm() {
     }
   }
 
-  const handleOnChange = (e: React.FormEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLInputElement
-    const image = target.files?.[0]
-    if (image) {
-      form.setFieldValue('image', image)
-      setInputFile(image)
-
-      const reader = new FileReader()
-      reader.onload = () => {
-        setImagePreviewUrl(reader.result as string)
-      }
-      reader.readAsDataURL(image)
-    }
-  }
-
   return (
     <div className="grid w-full gap-1.5 sticky bottom-0">
       <form
@@ -118,26 +90,9 @@ export function SendMessageForm() {
       >
         <div className="border bg-background rounded-md">
           <div className="flex items-center">
-            {
-            inputFile && imagePreviewUrl &&
-            <div>
-              <img src={imagePreviewUrl} alt="Preview" className="max-w-20 max-h-20" />
-              </div>
-            }
-            <form.Field
-              name="image"
-              children={(field) => (
-                <div className="w-8 h-10 relative">
-                  <IoIosAttach className="w-full h-full text-ring" />
-                  <Input
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    id={field.name}
-                    name={field.name}
-                    type="file"
-                    onChange={handleOnChange}
-                  />
-                </div>
-              )}
+            <FileInputSendMessage
+              onChange={(file) => form.setFieldValue('image', file)}
+              resetPreview={form.getFieldValue('image') === null}
             />
             <form.Field
               name="text"
