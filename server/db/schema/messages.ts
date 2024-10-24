@@ -23,7 +23,7 @@ export const messages = pgTable('messages', {
   authorID: integer('author_id')
     .references(() => users.id)
     .notNull(),
-  target: integer('target').references(() => users.id),
+  targetID: integer('target').references(() => users.id),
   channelID: integer('channel_id').references(() => channels.id),
   isChat: boolean('isChat').notNull().default(false),
 })
@@ -35,7 +35,7 @@ export const postsRelations = relations(messages, ({ one }) => ({
     relationName: 'author',
   }),
   target: one(users, {
-    fields: [messages.target],
+    fields: [messages.targetID],
     references: [users.id],
     relationName: 'target',
   }),

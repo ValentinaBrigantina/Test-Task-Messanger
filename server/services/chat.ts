@@ -21,7 +21,7 @@ import { UploadsDir } from '../helpers/constants'
 export const saveMessage = async (
   data: MessageSchemaInsert
 ): Promise<MessageSchemaSelect> => {
-  if (!data.channelID && !data.target && !data.isChat) {
+  if (!data.channelID && !data.targetID && !data.isChat) {
     throw new HTTPException(400, {
       message: 'channelID or target required if not chat',
     })
@@ -54,7 +54,7 @@ export const getMessagesForChat = (): Promise<MessageSchemaWithAuthorData[]> =>
         role: usersTable.role,
       },
       isChat: messagesTable.isChat,
-      target: messagesTable.target,
+      targetID: messagesTable.targetID,
       channelID: messagesTable.channelID,
       src: messagesTable.src,
       type: messagesTable.type,
@@ -76,8 +76,8 @@ export const getMessageWithAuthorProfile = async ({
 }
 
 export const uploadImage = async (file: File): Promise<string> => {
-    const name = createUniqueName(file.name)
-    const path = await getPath(name, UploadsDir.ChatImage)
-    await upload(file, path)
-    return getUrl(name, UploadsDir.ChatImage)
+  const name = createUniqueName(file.name)
+  const path = await getPath(name, UploadsDir.ChatImage)
+  await upload(file, path)
+  return getUrl(name, UploadsDir.ChatImage)
 }

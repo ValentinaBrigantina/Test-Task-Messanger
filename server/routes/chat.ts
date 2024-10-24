@@ -11,20 +11,24 @@ import {
   type ValidImage,
 } from '../helpers/customValidation/imageSchema'
 
-export const chatRoute = new Hono()
+const app = new Hono()
 
-  .get('/contacts', authMiddleware, getUser, async (c) => {
+app.use(authMiddleware)
+
+export const chatRoute = app
+
+  .get('/contacts', getUser, async (c) => {
     const { id } = c.var.user
     const contacts: UserProfile[] = await getContacts(id)
     return c.json(contacts)
   })
 
-  .get('/messages', authMiddleware, async (c) => {
+  .get('/messages', async (c) => {
     const messages: MessageSchemaWithAuthorData[] = await getMessagesForChat()
     return c.json(messages)
   })
 
-  .post('/message', authMiddleware, async (c) => {
+  .post('/message', async (c) => {
     const formData = await c.req.formData()
     const image = formData.get('image') as ValidImage | null
     if (!image) {
@@ -37,3 +41,7 @@ export const chatRoute = new Hono()
     const url = await uploadImage(image)
     return c.json(url)
   })
+
+  .get('/channel', getUser, async (c) => {
+    const { id } = c.var.user
+})

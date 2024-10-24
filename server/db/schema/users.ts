@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 import { Role } from '../../helpers/getUser'
 import { messages } from './messages'
+import { usersToChannels } from './usersToChannels'
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -15,8 +16,9 @@ export const users = pgTable('users', {
 })
 
 export const usersRelations = relations(users, ({ many }) => ({
-  author: many(messages, { relationName: 'author' }),
-  target: many(messages, { relationName: 'target' }),
+  authoredMessages: many(messages, { relationName: 'authoredMessages' }),
+  targetedMessages: many(messages, { relationName: 'targetedMessages' }),
+  usersToChannels: many(usersToChannels)
 }))
 
 export const insertUserSchema = createInsertSchema(users)

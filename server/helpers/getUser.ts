@@ -8,7 +8,7 @@ export enum Role {
   Admin = 'admin',
 }
 
-type Env = {
+export type Env = {
   Variables: {
     user: UserSchemaSelect
   }

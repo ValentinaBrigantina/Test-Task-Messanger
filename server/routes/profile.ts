@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../helpers/bearerAuth'
-import { getUser } from '../helpers/getUser'
+import { getUser, type Env } from '../helpers/getUser'
 import { updateAvatar, updatePassword, uploadAvatar } from '../services/profile'
 import { dataUpdatePassword, type UserProfile } from '../sharedTypes'
 import { zValidator } from '@hono/zod-validator'
@@ -10,25 +10,23 @@ import {
   type ValidImage,
 } from '../helpers/customValidation/imageSchema'
 
-export const profileRoute = new Hono()
+const app = new Hono<Env>()
 
-  .put(
-    '/password',
-    authMiddleware,
-    getUser,
-    zValidator('json', dataUpdatePassword),
-    async (c) => {
-      const data = c.req.valid('json')
-      const user = c.var.user
-      if (!(await compareHash(data.currentPassword, user.password))) {
-        return c.json({ error: 'Incorrect current password' }, 400)
-      }
-      const res: UserProfile = await updatePassword(user.id, data.newPassword)
-      return c.json(res)
+app.use(authMiddleware, getUser)
+
+export const profileRoute = app
+
+  .put('/password', zValidator('json', dataUpdatePassword), async (c) => {
+    const data = c.req.valid('json')
+    const user = c.var.user
+    if (!(await compareHash(data.currentPassword, user.password))) {
+      return c.json({ error: 'Incorrect current password' }, 400)
     }
-  )
+    const res: UserProfile = await updatePassword(user.id, data.newPassword)
+    return c.json(res)
+  })
 
-  .put('/avatar', authMiddleware, getUser, async (c) => {
+  .put('/avatar', async (c) => {
     const formData = await c.req.formData()
     const avatar = formData.get('avatar') as ValidImage | null
     if (!avatar) {
