@@ -11,6 +11,11 @@ export const authUserData = insertUserSchema.pick({
 })
 export type AuthSchema = z.infer<typeof authUserData>
 
+export const userID = selectUserSchema.pick({
+  id: true,
+})
+export type UserID = z.infer<typeof userID>
+
 export const dataUpdatePassword = z.object({
   newPassword: z.string().min(2).max(20),
   currentPassword: z.string().min(2).max(20),
@@ -55,4 +60,8 @@ export type WsTextDataFromApi = {
 export type WsNewContactFromApi = {
   eventType: string
   contact: UserProfile
+}
+
+export type getChannelFromAPI = {
+  channelID: number
 }

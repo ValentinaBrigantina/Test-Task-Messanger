@@ -1,8 +1,14 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
-import { getContacts, getMessagesForChat, uploadImage } from '../services/chat'
 import {
+  getContacts,
+  getMessagesForChat,
+  getOrCreateChannel,
+  uploadImage,
+} from '../services/chat'
+import {
+  userID,
   type MessageSchemaWithAuthorData,
   type UserProfile,
 } from '../sharedTypes'
@@ -10,6 +16,7 @@ import {
   imageSchema,
   type ValidImage,
 } from '../helpers/customValidation/imageSchema'
+import { zValidator } from '@hono/zod-validator'
 
 const app = new Hono()
 
@@ -42,6 +49,9 @@ export const chatRoute = app
     return c.json(url)
   })
 
-  .get('/channel', getUser, async (c) => {
+  .get('/channel', getUser, zValidator('json', userID), async (c) => {
     const { id } = c.var.user
-})
+    const targetContact = c.req.valid('json')
+    const channelID = await getOrCreateChannel([id, targetContact.id])
+    return c.json({ channelID })
+  })

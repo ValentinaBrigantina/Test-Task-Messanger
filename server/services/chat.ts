@@ -1,5 +1,5 @@
 import { HTTPException } from 'hono/http-exception'
-import { ne, eq } from 'drizzle-orm'
+import { ne, eq, inArray, count } from 'drizzle-orm'
 
 import { db } from '../db'
 import {
@@ -8,6 +8,8 @@ import {
   type MessageSchemaSelect,
 } from '../db/schema/messages'
 import { users as usersTable } from '../db/schema/users'
+import { channels as channelsTable } from '../db/schema/channels'
+import { usersToChannels as usersToChannelsTable } from '../db/schema/usersToChannels'
 import type {
   MessageSchemaWithAuthorData,
   UserProfile,
@@ -23,7 +25,7 @@ export const saveMessage = async (
 ): Promise<MessageSchemaSelect> => {
   if (!data.channelID && !data.targetID && !data.isChat) {
     throw new HTTPException(400, {
-      message: 'channelID or target required if not chat',
+      message: 'channelID or targetID required if not chat',
     })
   }
   const [message] = await db.insert(messagesTable).values(data).returning()
@@ -80,4 +82,42 @@ export const uploadImage = async (file: File): Promise<string> => {
   const path = await getPath(name, UploadsDir.ChatImage)
   await upload(file, path)
   return getUrl(name, UploadsDir.ChatImage)
+}
+
+const getChannelByUserIDs = (userIDs: number[]) =>
+  db
+    .select({ channelID: usersToChannelsTable.channelID })
+    .from(usersToChannelsTable)
+    .innerJoin(
+      channelsTable,
+      eq(usersToChannelsTable.channelID, channelsTable.id)
+    )
+    .where(inArray(usersToChannelsTable.userID, userIDs))
+    .groupBy(usersToChannelsTable.channelID)
+    .having(eq(count(usersToChannelsTable.userID), userIDs.length))
+
+const createChannel = () =>
+  db.insert(channelsTable).values({}).returning({ id: channelsTable.id })
+
+const linkUsersToChannel = (userIDs: number[], channelID: number) =>
+  db.insert(usersToChannelsTable).values(
+    userIDs.map((userID) => ({
+      userID: userID,
+      channelID: channelID,
+    }))
+  )
+
+export const getOrCreateChannel = async (
+  userIDs: number[]
+): Promise<number> => {
+  const [channel] = await getChannelByUserIDs(userIDs)
+  let channelID: number
+  if (!channel) {
+    const [newChannel] = await createChannel()
+    channelID = newChannel.id
+    await linkUsersToChannel(userIDs, channelID)
+  } else {
+    channelID = channel.channelID
+  }
+  return channelID
 }
