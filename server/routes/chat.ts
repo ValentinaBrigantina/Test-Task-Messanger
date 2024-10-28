@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
 import {
-  getContacts,
+  getContactsWithoutAuthor,
+  getMessagesForChannel,
   getMessagesForChat,
   getOrCreateChannel,
   uploadImage,
@@ -26,7 +27,7 @@ export const chatRoute = app
 
   .get('/contacts', getUser, async (c) => {
     const { id } = c.var.user
-    const contacts: UserProfile[] = await getContacts(id)
+    const contacts: UserProfile[] = await getContactsWithoutAuthor(id)
     return c.json(contacts)
   })
 
@@ -49,9 +50,15 @@ export const chatRoute = app
     return c.json(url)
   })
 
-  .get('/channel', getUser, zValidator('json', userID), async (c) => {
+  .post('/channel', getUser, zValidator('json', userID), async (c) => {
     const { id } = c.var.user
     const targetContact = c.req.valid('json')
     const channelID = await getOrCreateChannel([id, targetContact.id])
     return c.json({ channelID })
+  })
+
+  .get('/channel/:id{[0-9]+}', async (c) => {
+    const id = Number.parseInt(c.req.param('id'))
+    const messages = await getMessagesForChannel(id)
+    return c.json({ messages })
   })

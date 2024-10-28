@@ -32,39 +32,47 @@ export const saveMessage = async (
   return message
 }
 
-export const getContacts = (id: number): Promise<UserProfile[]> =>
-  db
-    .select({
+const contactsSelect = db
+  .select({
+    id: usersTable.id,
+    name: usersTable.name,
+    avatar: usersTable.avatar,
+    role: usersTable.role,
+  })
+  .from(usersTable)
+
+export const getContactsWithoutAuthor = (id: number): Promise<UserProfile[]> =>
+  contactsSelect.where(ne(usersTable.id, id))
+
+const messageWithAuthorSelect = db
+  .select({
+    id: messagesTable.id,
+    text: messagesTable.text,
+    createdAt: messagesTable.createdAt,
+    author: {
       id: usersTable.id,
       name: usersTable.name,
       avatar: usersTable.avatar,
       role: usersTable.role,
-    })
-    .from(usersTable)
-    .where(ne(usersTable.id, id))
+    },
+    isChat: messagesTable.isChat,
+    targetID: messagesTable.targetID,
+    channelID: messagesTable.channelID,
+    src: messagesTable.src,
+    type: messagesTable.type,
+  })
+  .from(messagesTable)
+  .innerJoin(usersTable, eq(messagesTable.authorID, usersTable.id))
 
 export const getMessagesForChat = (): Promise<MessageSchemaWithAuthorData[]> =>
-  db
-    .select({
-      id: messagesTable.id,
-      text: messagesTable.text,
-      createdAt: messagesTable.createdAt,
-      author: {
-        id: usersTable.id,
-        name: usersTable.name,
-        avatar: usersTable.avatar,
-        role: usersTable.role,
-      },
-      isChat: messagesTable.isChat,
-      targetID: messagesTable.targetID,
-      channelID: messagesTable.channelID,
-      src: messagesTable.src,
-      type: messagesTable.type,
-    })
-    .from(messagesTable)
+  messageWithAuthorSelect
     .where(eq(messagesTable.isChat, true))
-    .innerJoin(usersTable, eq(messagesTable.authorID, usersTable.id))
     .orderBy(messagesTable.createdAt)
+
+export const getMessagesForChannel = (
+  channelID: number
+): Promise<MessageSchemaWithAuthorData[]> =>
+  messageWithAuthorSelect.where(eq(messagesTable.channelID, channelID))
 
 export const getMessageWithAuthorProfile = async ({
   authorID,
@@ -121,3 +129,13 @@ export const getOrCreateChannel = async (
   }
   return channelID
 }
+
+export const getContactsByChannelID = (
+  channelID: number
+): Promise<UserProfile[]> =>
+  contactsSelect
+    .innerJoin(
+      usersToChannelsTable,
+      eq(usersTable.id, usersToChannelsTable.userID)
+    )
+    .where(eq(usersToChannelsTable.channelID, channelID))
