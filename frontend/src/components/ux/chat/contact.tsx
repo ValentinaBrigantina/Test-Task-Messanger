@@ -1,10 +1,11 @@
 import { useContext } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { UserProfile } from '@server/sharedTypes'
+import { useQuery } from '@tanstack/react-query'
+import type { UserProfile } from '@server/sharedTypes'
 import { Card, CardContent } from '../../ui/card'
 import { ContactAvatar } from './contactAvatar'
-import { getOrCreateChannel } from '@/lib/api'
 import { CurrentContactContext } from '@/routes/_authenticated/_chatLayout'
+import { getChannelQueryOptions } from '@/lib/api'
 
 interface IContactProps {
   contact: UserProfile
@@ -14,9 +15,12 @@ export function Contact({ contact }: IContactProps) {
   const navigate = useNavigate()
   const currentTargetContact = useContext(CurrentContactContext)
 
-  const handleClick = async () => {
-    const channelId = await getOrCreateChannel({ id: contact.id })
-    navigate({ to: `/chat/${channelId.id}` })
+  const { data } = useQuery(
+    getChannelQueryOptions({ id: contact.id })
+  )
+
+  const handleClick = () => {
+    data && navigate({ to: `/chat/${data?.id}` })
   }
 
   const isCurrentContact = currentTargetContact?.id === contact.id

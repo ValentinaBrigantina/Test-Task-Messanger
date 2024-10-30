@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getContactsQueryOptions } from '@/lib/api'
 import { Contact } from './contact'
 import { WsAction } from '@/utils/constants'
-import { UserProfile, WsNewContactFromApi } from '@server/sharedTypes'
+import type { UserProfile, WsNewContactFromApi } from '@server/sharedTypes'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { ContactSkeleton } from './skeletons/contactSkeleton'
 

@@ -28,7 +28,7 @@ export const messages = pgTable('messages', {
   isChat: boolean('isChat').notNull().default(false),
 })
 
-export const postsRelations = relations(messages, ({ one }) => ({
+export const messagesRelations = relations(messages, ({ one }) => ({
   author: one(users, {
     fields: [messages.authorID],
     references: [users.id],

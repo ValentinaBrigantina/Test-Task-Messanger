@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
-import { UserProfile } from '@server/sharedTypes';
+import type { UserProfile } from '@server/sharedTypes';
 
 export interface IUserAvatarProps {
     user: UserProfile

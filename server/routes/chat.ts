@@ -1,15 +1,17 @@
 import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
 import {
+  createChannel,
+  getChannel,
   getContactsWithoutAuthor,
   getMessagesForChannel,
   getMessagesForChat,
-  getOrCreateChannel,
   uploadImage,
 } from '../services/chat'
 import {
-  userID,
   type MessageSchemaWithAuthorData,
   type UserProfile,
 } from '../sharedTypes'
@@ -17,7 +19,7 @@ import {
   imageSchema,
   type ValidImage,
 } from '../helpers/customValidation/imageSchema'
-import { zValidator } from '@hono/zod-validator'
+
 
 const app = new Hono()
 
@@ -50,19 +52,42 @@ export const chatRoute = app
     return c.json(url)
   })
 
-  .post('/channel', getUser, zValidator('json', userID), async (c) => {
-    const { id } = c.var.user
-    const targetContact = c.req.valid('json')
-    const channelID = await getOrCreateChannel([id, targetContact.id])
-    return c.json(channelID)
-  })
+  .get(
+    '/channel',
+    getUser,
+    zValidator(
+      'query',
+      z.object({
+        contact: z.string(),
+      })
+    ),
+    async (c) => {
+      const { id } = c.var.user
+      const { contact } = c.req.valid('query')
+      const channelID = await getChannel([id, parseInt(contact)])
+      return c.json(channelID)
+    }
+  )
+
+  .post(
+    '/channel',
+    getUser,
+    zValidator(
+      'query',
+      z.object({
+        contact: z.string(),
+      })
+    ),
+    async (c) => {
+      const { id } = c.var.user
+      const { contact } = c.req.valid('query')
+      const channelID = await createChannel([id, parseInt(contact)])
+      return c.json(channelID)
+    }
+  )
 
   .get('/channel/:id{[0-9]+}', async (c) => {
     const id = Number.parseInt(c.req.param('id'))
     const messages = await getMessagesForChannel(id)
-    return c.json({ messages })
-  })
-
-  .get('/channel/:id{[0-9]+}', async (c) => {
-    
+    return c.json(messages)
   })

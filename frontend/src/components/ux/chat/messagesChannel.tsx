@@ -1,28 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-
 import {
+    ChannelID,
   MessageSchemaWithAuthorData,
   WsTextDataFromApi,
 } from '@server/sharedTypes'
 import { formatDate, IDate } from '@/utils/helpers.ts/formatDate'
 import { Message } from './message'
-import { WsAction } from '@/utils/constants'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { MessageSkeleton } from './skeletons/messageSkeleton'
-import { getGeneralChatMessagesQueryOptions } from '@/lib/api'
+import { getChannelMessagesQueryOptions } from '@/lib/api'
+import { CurrentContactContext } from '@/routes/_authenticated/_chatLayout'
+import { createPrivateChannelId } from '@/utils/helpers.ts/createPrivateChannelId'
 
-export function Messages() {
+interface IMessageChannelProps {
+    channelId: ChannelID
+}
+
+export function MessagesChannel({ channelId }: IMessageChannelProps) {
   const { isConnected, subscribe } = useWebSocket()
   const queryClient = useQueryClient()
-  const messagesQuery = useQuery(getGeneralChatMessagesQueryOptions)
+  const targetContact = useContext(CurrentContactContext)
+  const messagesQuery = useQuery(getChannelMessagesQueryOptions(channelId))
   const [messages, setMessages] = useState<MessageSchemaWithAuthorData[]>([])
   const isWsReady = isConnected()
 
   useEffect(() => {
     return () => {
       queryClient.invalidateQueries({
-        queryKey: getGeneralChatMessagesQueryOptions.queryKey,
+        queryKey: getChannelMessagesQueryOptions(channelId).queryKey,
         exact: true,
       })
     }
@@ -32,16 +38,18 @@ export function Messages() {
     if (messagesQuery.data?.length) {
       setMessages(messagesQuery.data)
     }
-  }, [messagesQuery.data])
+  }, [messagesQuery.data, targetContact])
 
   useEffect(() => {
     if (messages.length && isWsReady) {
       subscribe((event) => {
         const data: WsTextDataFromApi = JSON.parse(event.data)
 
+        const topicPrivateChannel = createPrivateChannelId(channelId.id)
+
         switch (data.eventType) {
-          case WsAction.UpdateChat:
-            setMessages([...messages, data.message])
+          case topicPrivateChannel:
+            setMessages((prevMessages) => [...prevMessages, data.message])
             break
 
           default:
@@ -49,7 +57,7 @@ export function Messages() {
         }
       })
     }
-  }, [messages, isWsReady])
+  }, [messages, isWsReady, channelId])
 
   return (
     <ul>

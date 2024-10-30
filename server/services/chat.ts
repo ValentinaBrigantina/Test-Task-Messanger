@@ -3,13 +3,13 @@ import { ne, eq, inArray, count } from 'drizzle-orm'
 
 import { db } from '../db'
 import {
-  messages as messagesTable,
+  messages,
   type MessageSchemaInsert,
   type MessageSchemaSelect,
 } from '../db/schema/messages'
-import { users as usersTable } from '../db/schema/users'
-import { channels as channelsTable } from '../db/schema/channels'
-import { usersToChannels as usersToChannelsTable } from '../db/schema/usersToChannels'
+import { users } from '../db/schema/users'
+import { channels } from '../db/schema/channels'
+import { usersToChannels } from '../db/schema/usersToChannels'
 import type {
   ChannelID,
   MessageSchemaWithAuthorData,
@@ -17,9 +17,9 @@ import type {
   WsTextDataFromApi,
 } from '../sharedTypes'
 import { getUserByID } from './user'
-import { WsAction } from '../../frontend/src/utils/constants'
 import { createUniqueName, getPath, getUrl, upload } from './upload'
 import { UploadsDir } from '../helpers/constants'
+import { createPrivateChannelId } from '../helpers/utils/createPrivateChannelId'
 
 export const saveMessage = async (
   data: MessageSchemaInsert
@@ -29,59 +29,75 @@ export const saveMessage = async (
       message: 'channelID or targetID required if not chat',
     })
   }
-  const [message] = await db.insert(messagesTable).values(data).returning()
+  const [message] = await db.insert(messages).values(data).returning()
   return message
 }
 
-const contactsSelect = db
-  .select({
-    id: usersTable.id,
-    name: usersTable.name,
-    avatar: usersTable.avatar,
-    role: usersTable.role,
-  })
-  .from(usersTable)
-
 export const getContactsWithoutAuthor = (id: number): Promise<UserProfile[]> =>
-  contactsSelect.where(ne(usersTable.id, id))
-
-const messageWithAuthorSelect = db
-  .select({
-    id: messagesTable.id,
-    text: messagesTable.text,
-    createdAt: messagesTable.createdAt,
-    author: {
-      id: usersTable.id,
-      name: usersTable.name,
-      avatar: usersTable.avatar,
-      role: usersTable.role,
-    },
-    isChat: messagesTable.isChat,
-    targetID: messagesTable.targetID,
-    channelID: messagesTable.channelID,
-    src: messagesTable.src,
-    type: messagesTable.type,
-  })
-  .from(messagesTable)
-  .innerJoin(usersTable, eq(messagesTable.authorID, usersTable.id))
+  db
+    .select({
+      id: users.id,
+      name: users.name,
+      avatar: users.avatar,
+      role: users.role,
+    })
+    .from(users)
+    .where(ne(users.id, id))
 
 export const getMessagesForChat = (): Promise<MessageSchemaWithAuthorData[]> =>
-  messageWithAuthorSelect
-    .where(eq(messagesTable.isChat, true))
-    .orderBy(messagesTable.createdAt)
+  db
+    .select({
+      id: messages.id,
+      text: messages.text,
+      createdAt: messages.createdAt,
+      author: {
+        id: users.id,
+        name: users.name,
+        avatar: users.avatar,
+        role: users.role,
+      },
+      isChat: messages.isChat,
+      targetID: messages.targetID,
+      channelID: messages.channelID,
+      src: messages.src,
+      type: messages.type,
+    })
+    .from(messages)
+    .innerJoin(users, eq(messages.authorID, users.id))
+    .where(eq(messages.isChat, true))
+    .orderBy(messages.createdAt)
 
 export const getMessagesForChannel = (
   channelID: number
 ): Promise<MessageSchemaWithAuthorData[]> =>
-  messageWithAuthorSelect.where(eq(messagesTable.channelID, channelID))
+  db
+    .select({
+      id: messages.id,
+      text: messages.text,
+      createdAt: messages.createdAt,
+      author: {
+        id: users.id,
+        name: users.name,
+        avatar: users.avatar,
+        role: users.role,
+      },
+      isChat: messages.isChat,
+      targetID: messages.targetID,
+      channelID: messages.channelID,
+      src: messages.src,
+      type: messages.type,
+    })
+    .from(messages)
+    .innerJoin(users, eq(messages.authorID, users.id))
+    .where(eq(messages.channelID, channelID))
 
-export const getMessageWithAuthorProfile = async ({
-  authorID,
-  ...dataMessage
-}: MessageSchemaSelect): Promise<WsTextDataFromApi> => {
+export const getMessageWithAuthorProfile = async (
+  { authorID, ...dataMessage }: MessageSchemaSelect,
+  topic: string
+): Promise<WsTextDataFromApi> => {
   const { password, ...author } = await getUserByID(authorID)
   return {
-    eventType: WsAction.UpdateChat,
+    eventType: topic,
     message: { ...dataMessage, author },
   }
 }
@@ -95,48 +111,49 @@ export const uploadImage = async (file: File): Promise<string> => {
 
 const getChannelByUserIDs = (userIDs: number[]) =>
   db
-    .select({ channelID: usersToChannelsTable.channelID })
-    .from(usersToChannelsTable)
-    .innerJoin(
-      channelsTable,
-      eq(usersToChannelsTable.channelID, channelsTable.id)
-    )
-    .where(inArray(usersToChannelsTable.userID, userIDs))
-    .groupBy(usersToChannelsTable.channelID)
-    .having(eq(count(usersToChannelsTable.userID), userIDs.length))
-
-const createChannel = () =>
-  db.insert(channelsTable).values({}).returning({ id: channelsTable.id })
+    .select({ channelID: usersToChannels.channelID })
+    .from(usersToChannels)
+    .innerJoin(channels, eq(usersToChannels.channelID, channels.id))
+    .where(inArray(usersToChannels.userID, userIDs))
+    .groupBy(usersToChannels.channelID)
+    .having(eq(count(usersToChannels.userID), userIDs.length))
 
 const linkUsersToChannel = (userIDs: number[], channelID: number) =>
-  db.insert(usersToChannelsTable).values(
+  db.insert(usersToChannels).values(
     userIDs.map((userID) => ({
       userID: userID,
       channelID: channelID,
     }))
   )
 
-export const getOrCreateChannel = async (
-  userIDs: number[]
-): Promise<ChannelID> => {
+export const getChannel = async (userIDs: number[]): Promise<ChannelID> => {
   const [channel] = await getChannelByUserIDs(userIDs)
-  let channelID: number
   if (!channel) {
-    const [newChannel] = await createChannel()
-    channelID = newChannel.id
-    await linkUsersToChannel(userIDs, channelID)
-  } else {
-    channelID = channel.channelID
+    throw new HTTPException(404)
   }
-  return {id: channelID}
+  return { id: channel.channelID }
+}
+
+export const createChannel = async (userIDs: number[]): Promise<ChannelID> => {
+  const id = createPrivateChannelId(userIDs)
+  const [channel] = await db
+    .insert(channels)
+    .values({ id: parseInt(id) })
+    .returning({ id: channels.id })
+  await linkUsersToChannel(userIDs, channel.id)
+  return { id: channel.id }
 }
 
 export const getContactsByChannelID = (
   channelID: number
 ): Promise<UserProfile[]> =>
-  contactsSelect
-    .innerJoin(
-      usersToChannelsTable,
-      eq(usersTable.id, usersToChannelsTable.userID)
-    )
-    .where(eq(usersToChannelsTable.channelID, channelID))
+  db
+    .select({
+      id: users.id,
+      name: users.name,
+      avatar: users.avatar,
+      role: users.role,
+    })
+    .from(users)
+    .innerJoin(usersToChannels, eq(users.id, usersToChannels.userID))
+    .where(eq(usersToChannels.channelID, channelID))

@@ -1,25 +1,33 @@
+import { useContext } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { sendImageInMessage, userQueryOptions } from '@/lib/api'
-import { WsTextDataFromClient } from '@server/sharedTypes'
-import { MessageType, WsAction } from '@server/helpers/constants'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { messageFormSchema } from '@/utils/customValidation/messageFormSchema'
-import { imageSchema } from '@server/helpers/customValidation/imageSchema'
 import { FileInputSendMessage } from './inputFileSendMessage'
+import { CurrentContactContext } from '@/routes/_authenticated/_chatLayout'
+import { createPrivateChannelId } from '@/utils/helpers.ts/createPrivateChannelId'
+import { imageSchema } from '@/utils/customValidation/imageSchema'
+import type { ChannelID, WsTextDataFromClient } from '@server/sharedTypes'
+import { MessageType, WsAction } from '@/utils/constants'
 
 type FormData = {
   text: string | undefined
   image: File | null
 }
 
-export function SendMessageForm() {
+interface ISendMessageFormProps {
+  channel?: ChannelID
+}
+
+export function SendMessageForm({ channel }: ISendMessageFormProps) {
   const { data: userData } = useQuery(userQueryOptions)
   const { isConnected, send } = useWebSocket()
   const isWsReady = isConnected()
+  const targetContact = useContext(CurrentContactContext)
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -32,15 +40,31 @@ export function SendMessageForm() {
         return
       }
 
+      let messageData: WsTextDataFromClient
       if (isWsReady && userData) {
-        const messageData: WsTextDataFromClient = {
-          eventType: WsAction.UpdateChat,
-          message: {
-            text: value.text,
-            type: MessageType.Text,
-            isChat: true,
-            authorID: userData.user.id,
-          },
+        const messageDataOfUser = {
+          text: value.text,
+          authorID: userData?.user.id,
+          type: MessageType.Text,
+        }
+        if (targetContact && channel) {
+          const topicPrivateChannel = createPrivateChannelId(channel.id)
+          messageData = {
+            eventType: topicPrivateChannel,
+            message: {
+              ...messageDataOfUser,
+              channelID: channel.id,
+              targetID: targetContact.id,
+            },
+          }
+        } else {
+          messageData = {
+            eventType: WsAction.UpdateChat,
+            message: {
+              ...messageDataOfUser,
+              isChat: true,
+            },
+          }
         }
 
         if (value.image) {

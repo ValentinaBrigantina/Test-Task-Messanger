@@ -16,8 +16,8 @@ export const users = pgTable('users', {
 })
 
 export const usersRelations = relations(users, ({ many }) => ({
-  authoredMessages: many(messages, { relationName: 'authoredMessages' }),
-  targetedMessages: many(messages, { relationName: 'targetedMessages' }),
+  authoredMessages: many(messages, { relationName: 'author' }),
+  targetedMessages: many(messages, { relationName: 'target' }),
   usersToChannels: many(usersToChannels)
 }))
 

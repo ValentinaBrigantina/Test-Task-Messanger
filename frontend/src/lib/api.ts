@@ -1,8 +1,8 @@
 import { hc } from 'hono/client'
 import { queryOptions } from '@tanstack/react-query'
-import { type ApiRoutes } from '@server/app'
-import {
-  type AuthSchema,
+import type { ApiRoutes } from '@server/app'
+import type {
+  AuthSchema,
   ChannelID,
   DataUpdatePassword,
   JwtToken,
@@ -116,7 +116,9 @@ export async function registration(value: AuthSchema): Promise<void> {
   }
 }
 
-export async function getMessages(): Promise<MessageSchemaWithAuthorData[]> {
+export async function getGeneralChatMessages(): Promise<
+  MessageSchemaWithAuthorData[]
+> {
   const headers = getAuthHeaders()
   const res = await api.chat.messages.$get({}, headers)
   if (!res.ok) {
@@ -125,27 +127,61 @@ export async function getMessages(): Promise<MessageSchemaWithAuthorData[]> {
   return res.json()
 }
 
-export const getMessagesQueryOptions = queryOptions({
-  queryKey: ['get-messages'],
-  queryFn: getMessages,
+export const getGeneralChatMessagesQueryOptions = queryOptions({
+  queryKey: ['get-general-chat-messages'],
+  queryFn: getGeneralChatMessages,
   staleTime: Infinity,
 })
 
-export async function getOrCreateChannel(
-  value: UserID
-): Promise<ChannelID> {
+async function getChannel(value: UserID): Promise<ChannelID> {
   const headers = getAuthHeaders()
-  const res = await api.chat.channel.$post({ json: value }, headers)
+  const res = await api.chat.channel.$get(
+    { query: { contact: value.id.toString() } },
+    headers
+  )
+  if (!res.ok && res.status === 404) {
+    return await createChannel(value)
+  }
+  return res.json()
+}
+
+async function createChannel(value: UserID): Promise<ChannelID> {
+  const headers = getAuthHeaders()
+  const res = await api.chat.channel.$post(
+    { query: { contact: value.id.toString() } },
+    headers
+  )
+  if (!res.ok ) {
+    throw new Error('server error')
+  }
+  return res.json()
+}
+
+export function getChannelQueryOptions(id: UserID) {
+  return queryOptions({
+    queryKey: ['get-channel', id],
+    queryFn: () => getChannel(id),
+  })
+}
+
+export async function getChannelMessages(
+  channel: ChannelID
+): Promise<MessageSchemaWithAuthorData[]> {
+  const headers = getAuthHeaders()
+  const res = await api.chat.channel[':id{[0-9]+}'].$get(
+    { param: { id: channel.id.toString() } },
+    headers
+  )
   if (!res.ok) {
     throw new Error('server error')
   }
   return res.json()
 }
 
-export function getOrCreateChannelQueryOptions(id: UserID){
+export function getChannelMessagesQueryOptions(channel: ChannelID) {
   return queryOptions({
-    queryKey: ['get-channel', id],
-    queryFn: () => getOrCreateChannel(id),
+    queryKey: ['get-channel-messages', channel],
+    queryFn: () => getChannelMessages(channel),
     staleTime: Infinity,
   })
-} 
+}

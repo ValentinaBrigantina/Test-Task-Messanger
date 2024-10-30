@@ -2,7 +2,7 @@ import { useContext } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { MainChat } from '@/components/ux/chat/mainChat'
 import { CurrentContactContext } from '../_chatLayout'
-import { UserProfile } from '@server/sharedTypes'
+import type { UserProfile } from '@server/sharedTypes'
 import { MainChannel } from '@/components/ux/chat/mainChannel'
 
 const ChatIndex = () => {

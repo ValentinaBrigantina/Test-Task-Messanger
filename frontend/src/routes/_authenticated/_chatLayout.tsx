@@ -1,12 +1,12 @@
 import { createContext, useState } from 'react'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Contacts } from '@/components/ux/chat/contacts'
-import { UserProfile } from '@server/sharedTypes'
+import type { UserProfile } from '@server/sharedTypes'
 
 export const CurrentContactContext = createContext<UserProfile | null>(null)
 
 const ChatLayout = () => {
-  const [currentTargetContact, setCurrentTargetContact] =
+  const [currentTargetContact, setCurrentTargetContact] = 
     useState<UserProfile | null>(null)
 
   return (
