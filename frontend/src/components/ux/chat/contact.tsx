@@ -13,17 +13,14 @@ interface IContactProps {
 
 export function Contact({ contact }: IContactProps) {
   const navigate = useNavigate()
-  const currentTargetContact = useContext(CurrentContactContext)
-
-  const { data } = useQuery(
-    getChannelQueryOptions({ id: contact.id })
-  )
+  const context = useContext(CurrentContactContext)
+  const { data } = useQuery(getChannelQueryOptions({ id: contact.id }))
 
   const handleClick = () => {
     data && navigate({ to: `/chat/${data?.id}` })
   }
 
-  const isCurrentContact = currentTargetContact?.id === contact.id
+  const isCurrentContact = context?.currentTargetContact?.id === contact.id
 
   return (
     <li className="my-1" onClick={handleClick}>
