@@ -11,6 +11,7 @@ import { users as usersTable } from '../db/schema/users'
 import { channels as channelsTable } from '../db/schema/channels'
 import { usersToChannels as usersToChannelsTable } from '../db/schema/usersToChannels'
 import type {
+  ChannelID,
   MessageSchemaWithAuthorData,
   UserProfile,
   WsTextDataFromApi,
@@ -117,7 +118,7 @@ const linkUsersToChannel = (userIDs: number[], channelID: number) =>
 
 export const getOrCreateChannel = async (
   userIDs: number[]
-): Promise<number> => {
+): Promise<ChannelID> => {
   const [channel] = await getChannelByUserIDs(userIDs)
   let channelID: number
   if (!channel) {
@@ -127,7 +128,7 @@ export const getOrCreateChannel = async (
   } else {
     channelID = channel.channelID
   }
-  return channelID
+  return {id: channelID}
 }
 
 export const getContactsByChannelID = (

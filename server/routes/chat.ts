@@ -54,11 +54,15 @@ export const chatRoute = app
     const { id } = c.var.user
     const targetContact = c.req.valid('json')
     const channelID = await getOrCreateChannel([id, targetContact.id])
-    return c.json({ channelID })
+    return c.json(channelID)
   })
 
   .get('/channel/:id{[0-9]+}', async (c) => {
     const id = Number.parseInt(c.req.param('id'))
     const messages = await getMessagesForChannel(id)
     return c.json({ messages })
+  })
+
+  .get('/channel/:id{[0-9]+}', async (c) => {
+    
   })

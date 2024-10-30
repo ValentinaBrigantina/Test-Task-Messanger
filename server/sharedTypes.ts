@@ -4,6 +4,7 @@ import type {
   MessageSchemaSelect,
 } from './db/schema/messages'
 import { insertUserSchema, selectUserSchema } from './db/schema/users'
+import { selectChannelSchema } from './db/schema/channels'
 
 export const authUserData = insertUserSchema.pick({
   name: true,
@@ -15,6 +16,11 @@ export const userID = selectUserSchema.pick({
   id: true,
 })
 export type UserID = z.infer<typeof userID>
+
+export const channelID = selectChannelSchema.pick({
+  id: true,
+})
+export type ChannelID = z.infer<typeof channelID>
 
 export const dataUpdatePassword = z.object({
   newPassword: z.string().min(2).max(20),

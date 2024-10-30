@@ -103,7 +103,7 @@ export function SendMessageForm() {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type your message here."
-                  className="block ring-inset "
+                  className="block ring-inset"
                 />
               )}
             />

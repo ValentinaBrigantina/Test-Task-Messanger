@@ -3,6 +3,7 @@ import {
   Link,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { useQuery, type QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { UserAvatar } from '@/components/ux/userAvatar'
@@ -48,6 +49,7 @@ function Root() {
     <>
       <NavBar />
       <Outlet />
+      <TanStackRouterDevtools />
       <Toaster />
     </>
   )

@@ -16,7 +16,9 @@ import { Route as LoginImport } from './routes/login'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProfileImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedChatImport } from './routes/_authenticated/chat'
+import { Route as AuthenticatedChatLayoutImport } from './routes/_authenticated/_chatLayout'
+import { Route as AuthenticatedChatLayoutChatImport } from './routes/_authenticated/_chatLayout/chat'
+import { Route as AuthenticatedChatLayoutChatChannelIdImport } from './routes/_authenticated/_chatLayout/chat.$channelId'
 
 // Create/Update Routes
 
@@ -49,11 +51,24 @@ const AuthenticatedProfileRoute = AuthenticatedProfileImport.update({
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 
-const AuthenticatedChatRoute = AuthenticatedChatImport.update({
-  id: '/chat',
-  path: '/chat',
+const AuthenticatedChatLayoutRoute = AuthenticatedChatLayoutImport.update({
+  id: '/_chatLayout',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+
+const AuthenticatedChatLayoutChatRoute =
+  AuthenticatedChatLayoutChatImport.update({
+    id: '/chat',
+    path: '/chat',
+    getParentRoute: () => AuthenticatedChatLayoutRoute,
+  } as any)
+
+const AuthenticatedChatLayoutChatChannelIdRoute =
+  AuthenticatedChatLayoutChatChannelIdImport.update({
+    id: '/$channelId',
+    path: '/$channelId',
+    getParentRoute: () => AuthenticatedChatLayoutChatRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -80,11 +95,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
     }
-    '/_authenticated/chat': {
-      id: '/_authenticated/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof AuthenticatedChatImport
+    '/_authenticated/_chatLayout': {
+      id: '/_authenticated/_chatLayout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedChatLayoutImport
       parentRoute: typeof AuthenticatedImport
     }
     '/_authenticated/profile': {
@@ -101,19 +116,63 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexImport
       parentRoute: typeof AuthenticatedImport
     }
+    '/_authenticated/_chatLayout/chat': {
+      id: '/_authenticated/_chatLayout/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AuthenticatedChatLayoutChatImport
+      parentRoute: typeof AuthenticatedChatLayoutImport
+    }
+    '/_authenticated/_chatLayout/chat/$channelId': {
+      id: '/_authenticated/_chatLayout/chat/$channelId'
+      path: '/$channelId'
+      fullPath: '/chat/$channelId'
+      preLoaderRoute: typeof AuthenticatedChatLayoutChatChannelIdImport
+      parentRoute: typeof AuthenticatedChatLayoutChatImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface AuthenticatedChatLayoutChatRouteChildren {
+  AuthenticatedChatLayoutChatChannelIdRoute: typeof AuthenticatedChatLayoutChatChannelIdRoute
+}
+
+const AuthenticatedChatLayoutChatRouteChildren: AuthenticatedChatLayoutChatRouteChildren =
+  {
+    AuthenticatedChatLayoutChatChannelIdRoute:
+      AuthenticatedChatLayoutChatChannelIdRoute,
+  }
+
+const AuthenticatedChatLayoutChatRouteWithChildren =
+  AuthenticatedChatLayoutChatRoute._addFileChildren(
+    AuthenticatedChatLayoutChatRouteChildren,
+  )
+
+interface AuthenticatedChatLayoutRouteChildren {
+  AuthenticatedChatLayoutChatRoute: typeof AuthenticatedChatLayoutChatRouteWithChildren
+}
+
+const AuthenticatedChatLayoutRouteChildren: AuthenticatedChatLayoutRouteChildren =
+  {
+    AuthenticatedChatLayoutChatRoute:
+      AuthenticatedChatLayoutChatRouteWithChildren,
+  }
+
+const AuthenticatedChatLayoutRouteWithChildren =
+  AuthenticatedChatLayoutRoute._addFileChildren(
+    AuthenticatedChatLayoutRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
-  AuthenticatedChatRoute: typeof AuthenticatedChatRoute
+  AuthenticatedChatLayoutRoute: typeof AuthenticatedChatLayoutRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedChatRoute: AuthenticatedChatRoute,
+  AuthenticatedChatLayoutRoute: AuthenticatedChatLayoutRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
@@ -123,20 +182,23 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 export interface FileRoutesByFullPath {
-  '': typeof AuthenticatedRouteWithChildren
+  '': typeof AuthenticatedChatLayoutRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/chat': typeof AuthenticatedChatRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/': typeof AuthenticatedIndexRoute
+  '/chat': typeof AuthenticatedChatLayoutChatRouteWithChildren
+  '/chat/$channelId': typeof AuthenticatedChatLayoutChatChannelIdRoute
 }
 
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/chat': typeof AuthenticatedChatRoute
+  '': typeof AuthenticatedChatLayoutRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/': typeof AuthenticatedIndexRoute
+  '/chat': typeof AuthenticatedChatLayoutChatRouteWithChildren
+  '/chat/$channelId': typeof AuthenticatedChatLayoutChatChannelIdRoute
 }
 
 export interface FileRoutesById {
@@ -144,24 +206,42 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/_authenticated/chat': typeof AuthenticatedChatRoute
+  '/_authenticated/_chatLayout': typeof AuthenticatedChatLayoutRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/_chatLayout/chat': typeof AuthenticatedChatLayoutChatRouteWithChildren
+  '/_authenticated/_chatLayout/chat/$channelId': typeof AuthenticatedChatLayoutChatChannelIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/login' | '/register' | '/chat' | '/profile' | '/'
+  fullPaths:
+    | ''
+    | '/login'
+    | '/register'
+    | '/profile'
+    | '/'
+    | '/chat'
+    | '/chat/$channelId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/register' | '/chat' | '/profile' | '/'
+  to:
+    | '/login'
+    | '/register'
+    | ''
+    | '/profile'
+    | '/'
+    | '/chat'
+    | '/chat/$channelId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
     | '/register'
-    | '/_authenticated/chat'
+    | '/_authenticated/_chatLayout'
     | '/_authenticated/profile'
     | '/_authenticated/'
+    | '/_authenticated/_chatLayout/chat'
+    | '/_authenticated/_chatLayout/chat/$channelId'
   fileRoutesById: FileRoutesById
 }
 
@@ -197,7 +277,7 @@ export const routeTree = rootRoute
     "/_authenticated": {
       "filePath": "_authenticated.tsx",
       "children": [
-        "/_authenticated/chat",
+        "/_authenticated/_chatLayout",
         "/_authenticated/profile",
         "/_authenticated/"
       ]
@@ -208,9 +288,12 @@ export const routeTree = rootRoute
     "/register": {
       "filePath": "register.tsx"
     },
-    "/_authenticated/chat": {
-      "filePath": "_authenticated/chat.tsx",
-      "parent": "/_authenticated"
+    "/_authenticated/_chatLayout": {
+      "filePath": "_authenticated/_chatLayout.tsx",
+      "parent": "/_authenticated",
+      "children": [
+        "/_authenticated/_chatLayout/chat"
+      ]
     },
     "/_authenticated/profile": {
       "filePath": "_authenticated/profile.tsx",
@@ -219,6 +302,17 @@ export const routeTree = rootRoute
     "/_authenticated/": {
       "filePath": "_authenticated/index.tsx",
       "parent": "/_authenticated"
+    },
+    "/_authenticated/_chatLayout/chat": {
+      "filePath": "_authenticated/_chatLayout/chat.tsx",
+      "parent": "/_authenticated/_chatLayout",
+      "children": [
+        "/_authenticated/_chatLayout/chat/$channelId"
+      ]
+    },
+    "/_authenticated/_chatLayout/chat/$channelId": {
+      "filePath": "_authenticated/_chatLayout/chat.$channelId.tsx",
+      "parent": "/_authenticated/_chatLayout/chat"
     }
   }
 }

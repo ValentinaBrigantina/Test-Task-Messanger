@@ -3,9 +3,11 @@ import { queryOptions } from '@tanstack/react-query'
 import { type ApiRoutes } from '@server/app'
 import {
   type AuthSchema,
+  ChannelID,
   DataUpdatePassword,
   JwtToken,
   MessageSchemaWithAuthorData,
+  UserID,
   UserProfile,
 } from '@server/sharedTypes'
 import { apiHost } from '@/utils/config'
@@ -128,3 +130,22 @@ export const getMessagesQueryOptions = queryOptions({
   queryFn: getMessages,
   staleTime: Infinity,
 })
+
+export async function getOrCreateChannel(
+  value: UserID
+): Promise<ChannelID> {
+  const headers = getAuthHeaders()
+  const res = await api.chat.channel.$post({ json: value }, headers)
+  if (!res.ok) {
+    throw new Error('server error')
+  }
+  return res.json()
+}
+
+export function getOrCreateChannelQueryOptions(id: UserID){
+  return queryOptions({
+    queryKey: ['get-channel', id],
+    queryFn: () => getOrCreateChannel(id),
+    staleTime: Infinity,
+  })
+} 
