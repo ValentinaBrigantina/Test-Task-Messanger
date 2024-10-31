@@ -33,7 +33,7 @@ function NavBar() {
       </Link>
       <div className="p-2 flex items-center justify-between gap-2">
         <Link to="/chat" className="[&.active]:font-bold">
-          Chat
+          Messenger
         </Link>
         <Link to="/profile" className="[&.active]:font-bold mx-2">
           {userData ? <UserAvatar user={userData?.user} /> : 'Profile'}

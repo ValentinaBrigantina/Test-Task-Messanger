@@ -18,7 +18,7 @@ export function MainChannel() {
   return (
     <div className="basic-3/4 flex-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl leading-9 tracking-tight text-primary">
+        <h1 className="text-lg leading-9 tracking-tight text-ring">
           {context && context?.currentTargetChannel?.isGroup ? `Channel ${context?.currentTargetChannel?.name}`:
           `Channel with ${targetContactQuery && targetContactQuery.data?.name}`}
         </h1>

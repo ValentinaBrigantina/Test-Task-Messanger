@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { IoIosAdd } from "react-icons/io"
 import { getChannelsQueryOptions, getContactsQueryOptions } from '@/lib/api'
 import { Contact } from './contact'
 import { WsAction } from '@/utils/constants'
@@ -12,6 +13,12 @@ import type {
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { ContactSkeleton } from './skeletons/contactSkeleton'
 import { ChannelOfGroup } from './channelOfGroup'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export function Contacts() {
   const queryClient = useQueryClient()
@@ -75,10 +82,22 @@ export function Contacts() {
 
   return (
     <div className="basis-1/4 flex-none">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h1 className="text-xl leading-9 tracking-tight text-primary">
+      <div className="flex items-center justify-between sm:mx-auto sm:w-full sm:max-w-sm">
+        <h1 className="text-lg leading-9 tracking-tight text-ring">
           Contacts and groups
         </h1>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger>
+              <div className="size-6 bg-primary rounded-full flex items-center text-primary-foreground hover:bg-primary/90">
+                <IoIosAdd className="size-6"/>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Add group chat</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       <ul className="h-[630px] rounded-md">
         {contactsQuery.isLoading &&
