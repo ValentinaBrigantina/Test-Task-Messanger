@@ -1,25 +1,28 @@
 import { createContext, useState } from 'react'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Contacts } from '@/components/ux/chat/contacts'
-import type { UserProfile } from '@server/sharedTypes'
+import type { Channel } from '@server/sharedTypes'
 
-export interface ICurrentContactContext {
-  currentTargetContact: UserProfile | null
-  setCurrentTargetContact: (contact: UserProfile | null) => void
+export interface ICurrentChannelContext {
+  currentTargetChannel: Channel | null
+  setCurrentTargetChannel: (channel: Channel | null) => void
 }
-export const CurrentContactContext = createContext<ICurrentContactContext | null>(null)
+export const CurrentChannelContext =
+  createContext<ICurrentChannelContext | null>(null)
 
 const ChatLayout = () => {
-  const [currentTargetContact, setCurrentTargetContact] = 
-    useState<UserProfile | null>(null)
+  const [currentTargetChannel, setCurrentTargetChannel] =
+    useState<Channel | null>(null)
 
   return (
-    <CurrentContactContext.Provider value={{ currentTargetContact, setCurrentTargetContact }}>
+    <CurrentChannelContext.Provider
+      value={{ currentTargetChannel, setCurrentTargetChannel }}
+    >
       <div className="p-5 max-w-7xl m-auto flex flex-row h-[830px] space-x-6 rounded-md bg-neutral-700">
-        <Contacts setCurrentTargetContact={setCurrentTargetContact} />
+        <Contacts />
         <Outlet />
       </div>
-    </CurrentContactContext.Provider>
+    </CurrentChannelContext.Provider>
   )
 }
 

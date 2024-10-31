@@ -5,21 +5,25 @@ import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
 import {
   createChannel,
+  createChannelOfGroup,
   getChannel,
+  getChannelsOfGroupsWithUser,
   getContactsWithoutAuthor,
   getMessagesForChannel,
-  getMessagesForChat,
+  getTargetContactByChannelId,
   uploadImage,
 } from '../services/chat'
 import {
-  type MessageSchemaWithAuthorData,
+  type Channel,
   type UserProfile,
+  createChannelOfGroupData,
 } from '../sharedTypes'
 import {
   imageSchema,
   type ValidImage,
 } from '../helpers/customValidation/imageSchema'
-
+import { server } from '..'
+import { WsAction } from '../helpers/constants'
 
 const app = new Hono()
 
@@ -33,11 +37,6 @@ export const chatRoute = app
     return c.json(contacts)
   })
 
-  .get('/messages', async (c) => {
-    const messages: MessageSchemaWithAuthorData[] = await getMessagesForChat()
-    return c.json(messages)
-  })
-
   .post('/message', async (c) => {
     const formData = await c.req.formData()
     const image = formData.get('image') as ValidImage | null
@@ -49,6 +48,7 @@ export const chatRoute = app
       return c.json({ error: parseResult.error.errors }, 400)
     }
     const url = await uploadImage(image)
+    c.status(201)
     return c.json(url)
   })
 
@@ -64,8 +64,8 @@ export const chatRoute = app
     async (c) => {
       const { id } = c.var.user
       const { contact } = c.req.valid('query')
-      const channelID = await getChannel([id, parseInt(contact)])
-      return c.json(channelID)
+      const channel = await getChannel([id, parseInt(contact)])
+      return c.json(channel)
     }
   )
 
@@ -82,6 +82,7 @@ export const chatRoute = app
       const { id } = c.var.user
       const { contact } = c.req.valid('query')
       const channelID = await createChannel([id, parseInt(contact)])
+      c.status(201)
       return c.json(channelID)
     }
   )
@@ -90,4 +91,36 @@ export const chatRoute = app
     const id = Number.parseInt(c.req.param('id'))
     const messages = await getMessagesForChannel(id)
     return c.json(messages)
+  })
+
+  .get('/channels-of-groups', getUser, async (c) => {
+    const { id } = c.var.user
+    const channels: Channel[] = await getChannelsOfGroupsWithUser(id)
+    return c.json(channels)
+  })
+
+  .post(
+    '/channels-of-groups',
+    getUser,
+    zValidator('json', createChannelOfGroupData),
+    async (c) => {
+      const data = c.req.valid('json')
+      const channelOfGroup: Channel = await createChannelOfGroup(data)
+      server.publish(
+        WsAction.UpdateChannelsOfGroups,
+        JSON.stringify({
+          eventType: WsAction.UpdateChannelsOfGroups,
+          channel: channelOfGroup,
+        })
+      )
+      c.status(201)
+      return c.json(channelOfGroup)
+    }
+  )
+
+  .get('/target-contact/:id{[0-9]+}', getUser, async (c) => {
+    const idChannel = Number.parseInt(c.req.param('id'))
+    const { id } = c.var.user
+    const targetContact = await getTargetContactByChannelId(id, idChannel)
+    return c.json(targetContact)
   })

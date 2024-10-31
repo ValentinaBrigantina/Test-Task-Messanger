@@ -1,11 +1,4 @@
-import {
-  text,
-  pgTable,
-  serial,
-  integer,
-  boolean,
-  timestamp,
-} from 'drizzle-orm/pg-core'
+import { text, pgTable, serial, integer, timestamp } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import type { z } from 'zod'
@@ -24,8 +17,9 @@ export const messages = pgTable('messages', {
     .references(() => users.id)
     .notNull(),
   targetID: integer('target').references(() => users.id),
-  channelID: integer('channel_id').references(() => channels.id),
-  isChat: boolean('isChat').notNull().default(false),
+  channelID: integer('channel_id')
+    .references(() => channels.id)
+    .notNull(),
 })
 
 export const messagesRelations = relations(messages, ({ one }) => ({

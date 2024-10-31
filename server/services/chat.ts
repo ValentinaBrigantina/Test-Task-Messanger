@@ -1,5 +1,5 @@
 import { HTTPException } from 'hono/http-exception'
-import { ne, eq, inArray, count } from 'drizzle-orm'
+import { ne, eq, inArray, count, and } from 'drizzle-orm'
 
 import { db } from '../db'
 import {
@@ -11,7 +11,8 @@ import { users } from '../db/schema/users'
 import { channels } from '../db/schema/channels'
 import { usersToChannels } from '../db/schema/usersToChannels'
 import type {
-  ChannelID,
+  Channel,
+  CreateChannelOfGroupData,
   MessageSchemaWithAuthorData,
   UserProfile,
   WsTextDataFromApi,
@@ -24,9 +25,9 @@ import { createPrivateChannelId } from '../helpers/utils/createPrivateChannelId'
 export const saveMessage = async (
   data: MessageSchemaInsert
 ): Promise<MessageSchemaSelect> => {
-  if (!data.channelID && !data.targetID && !data.isChat) {
+  if (!data.channelID) {
     throw new HTTPException(400, {
-      message: 'channelID or targetID required if not chat',
+      message: 'channelID required',
     })
   }
   const [message] = await db.insert(messages).values(data).returning()
@@ -44,28 +45,28 @@ export const getContactsWithoutAuthor = (id: number): Promise<UserProfile[]> =>
     .from(users)
     .where(ne(users.id, id))
 
-export const getMessagesForChat = (): Promise<MessageSchemaWithAuthorData[]> =>
+export const getChannelsOfGroupsWithUser = (id: number): Promise<Channel[]> =>
   db
     .select({
-      id: messages.id,
-      text: messages.text,
-      createdAt: messages.createdAt,
-      author: {
-        id: users.id,
-        name: users.name,
-        avatar: users.avatar,
-        role: users.role,
-      },
-      isChat: messages.isChat,
-      targetID: messages.targetID,
-      channelID: messages.channelID,
-      src: messages.src,
-      type: messages.type,
+      id: channels.id,
+      name: channels.name,
+      isGroup: channels.isGroup,
     })
-    .from(messages)
-    .innerJoin(users, eq(messages.authorID, users.id))
-    .where(eq(messages.isChat, true))
-    .orderBy(messages.createdAt)
+    .from(channels)
+    .innerJoin(usersToChannels, eq(usersToChannels.channelID, channels.id))
+    .where(and(eq(channels.isGroup, true), eq(usersToChannels.userID, id)))
+
+export const createChannelOfGroup = async (
+  data: CreateChannelOfGroupData
+): Promise<Channel> => {
+  const id = createPrivateChannelId(data.contacts)
+  const [channel] = await db
+    .insert(channels)
+    .values({ id: parseInt(id), name: data.name })
+    .returning()
+  await linkUsersToChannel(data.contacts, channel.id)
+  return channel
+}
 
 export const getMessagesForChannel = (
   channelID: number
@@ -81,7 +82,6 @@ export const getMessagesForChannel = (
         avatar: users.avatar,
         role: users.role,
       },
-      isChat: messages.isChat,
       targetID: messages.targetID,
       channelID: messages.channelID,
       src: messages.src,
@@ -111,11 +111,11 @@ export const uploadImage = async (file: File): Promise<string> => {
 
 const getChannelByUserIDs = (userIDs: number[]) =>
   db
-    .select({ channelID: usersToChannels.channelID })
-    .from(usersToChannels)
-    .innerJoin(channels, eq(usersToChannels.channelID, channels.id))
+    .select({ id: channels.id, name: channels.name, isGroup: channels.isGroup })
+    .from(channels)
+    .innerJoin(usersToChannels, eq(channels.id, usersToChannels.channelID))
     .where(inArray(usersToChannels.userID, userIDs))
-    .groupBy(usersToChannels.channelID)
+    .groupBy(channels.id, channels.name, channels.isGroup)
     .having(eq(count(usersToChannels.userID), userIDs.length))
 
 const linkUsersToChannel = (userIDs: number[], channelID: number) =>
@@ -126,22 +126,22 @@ const linkUsersToChannel = (userIDs: number[], channelID: number) =>
     }))
   )
 
-export const getChannel = async (userIDs: number[]): Promise<ChannelID> => {
+export const getChannel = async (userIDs: number[]): Promise<Channel> => {
   const [channel] = await getChannelByUserIDs(userIDs)
   if (!channel) {
     throw new HTTPException(404)
   }
-  return { id: channel.channelID }
+  return channel
 }
 
-export const createChannel = async (userIDs: number[]): Promise<ChannelID> => {
+export const createChannel = async (userIDs: number[]): Promise<Channel> => {
   const id = createPrivateChannelId(userIDs)
   const [channel] = await db
     .insert(channels)
     .values({ id: parseInt(id) })
-    .returning({ id: channels.id })
+    .returning()
   await linkUsersToChannel(userIDs, channel.id)
-  return { id: channel.id }
+  return channel
 }
 
 export const getContactsByChannelID = (
@@ -157,3 +157,27 @@ export const getContactsByChannelID = (
     .from(users)
     .innerJoin(usersToChannels, eq(users.id, usersToChannels.userID))
     .where(eq(usersToChannels.channelID, channelID))
+
+export const getTargetContactByChannelId = async (
+  userId: number,
+  channelId: number
+): Promise<UserProfile> => {
+  const [contact] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      avatar: users.avatar,
+      role: users.role,
+    })
+    .from(users)
+    .innerJoin(usersToChannels, eq(users.id, usersToChannels.userID))
+    .innerJoin(channels, eq(usersToChannels.channelID, channels.id))
+    .where(
+      and(
+        eq(usersToChannels.channelID, channelId),
+        eq(channels.isGroup, false),
+        ne(usersToChannels.userID, userId)
+      )
+    )
+  return contact
+}

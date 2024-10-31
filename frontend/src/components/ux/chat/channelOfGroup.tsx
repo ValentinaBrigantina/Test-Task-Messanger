@@ -1,26 +1,20 @@
 import { useContext } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import type { UserProfile } from '@server/sharedTypes'
-import { Card, CardContent } from '../../ui/card'
-import { ContactAvatar } from './contactAvatar'
-import { getChannelQueryOptions } from '@/lib/api'
+import { Card, CardContent } from '@/components/ui/card'
 import { CurrentChannelContext } from '@/routes/_authenticated/_chatLayout'
+import type { Channel } from '@server/sharedTypes'
 
-interface IContactProps {
-  contact: UserProfile
+interface IChannelOfGroupProps {
+  channel: Channel
 }
 
-export function Contact({ contact }: IContactProps) {
+export function ChannelOfGroup({ channel }: IChannelOfGroupProps) {
   const navigate = useNavigate()
   const context = useContext(CurrentChannelContext)
-  const { data: channel } = useQuery(getChannelQueryOptions({ id: contact.id }))
 
   const handleClick = () => {
-    context?.setCurrentTargetChannel &&
-      channel &&
-      context.setCurrentTargetChannel(channel)
-    channel && navigate({ to: `/chat/${channel?.id}` })
+    context?.setCurrentTargetChannel && context.setCurrentTargetChannel(channel)
+    navigate({ to: `/chat/${channel?.id}` })
   }
 
   const isCurrentChannel = context?.currentTargetChannel?.id === channel?.id
@@ -31,7 +25,7 @@ export function Contact({ contact }: IContactProps) {
         className={`bg-background cursor-pointer rounded-md ${isCurrentChannel ? 'border-2' : 'border-background'}`}
       >
         <CardContent className="p-3">
-          <ContactAvatar user={contact} />
+          <div>{channel?.name}</div>
         </CardContent>
       </Card>
     </li>

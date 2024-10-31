@@ -1,0 +1,1 @@
+ALTER TABLE "messages" ALTER COLUMN "channel_id" SET NOT NULL;

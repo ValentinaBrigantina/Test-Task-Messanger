@@ -3,6 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import type { ApiRoutes } from '@server/app'
 import type {
   AuthSchema,
+  Channel,
   ChannelID,
   DataUpdatePassword,
   JwtToken,
@@ -55,6 +56,21 @@ async function getContacts(): Promise<UserProfile[]> {
 export const getContactsQueryOptions = queryOptions({
   queryKey: ['get-contacts'],
   queryFn: getContacts,
+  staleTime: Infinity,
+})
+
+async function getChannels(): Promise<Channel[]> {
+  const headers = getAuthHeaders()
+  const res = await api.chat['channels-of-groups'].$get({}, headers)
+  if (!res.ok) {
+    throw new Error('server error')
+  }
+  return res.json()
+}
+
+export const getChannelsQueryOptions = queryOptions({
+  queryKey: ['get-channels-of-groups'],
+  queryFn: getChannels,
   staleTime: Infinity,
 })
 
@@ -133,7 +149,7 @@ export const getGeneralChatMessagesQueryOptions = queryOptions({
   staleTime: Infinity,
 })
 
-async function getChannel(value: UserID): Promise<ChannelID> {
+async function getChannel(value: UserID): Promise<Channel> {
   const headers = getAuthHeaders()
   const res = await api.chat.channel.$get(
     { query: { contact: value.id.toString() } },
@@ -145,13 +161,13 @@ async function getChannel(value: UserID): Promise<ChannelID> {
   return res.json()
 }
 
-async function createChannel(value: UserID): Promise<ChannelID> {
+async function createChannel(value: UserID): Promise<Channel> {
   const headers = getAuthHeaders()
   const res = await api.chat.channel.$post(
     { query: { contact: value.id.toString() } },
     headers
   )
-  if (!res.ok ) {
+  if (!res.ok) {
     throw new Error('server error')
   }
   return res.json()
@@ -182,6 +198,28 @@ export function getChannelMessagesQueryOptions(channel: ChannelID) {
   return queryOptions({
     queryKey: ['get-channel-messages', channel],
     queryFn: () => getChannelMessages(channel),
+    staleTime: Infinity,
+  })
+}
+
+export async function getTargetContactByChannelId(
+  channel: ChannelID
+): Promise<UserProfile> {
+  const headers = getAuthHeaders()
+  const res = await api.chat['target-contact'][':id{[0-9]+}'].$get(
+    { param: { id: channel.id.toString() } },
+    headers
+  )
+  if (!res.ok) {
+    throw new Error('server error')
+  }
+  return res.json()
+}
+
+export function getTargetContactByChannelIdQueryOptions(channel: ChannelID) {
+  return queryOptions({
+    queryKey: ['get-target-contact', channel],
+    queryFn: () => getTargetContactByChannelId(channel),
     staleTime: Infinity,
   })
 }

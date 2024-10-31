@@ -25,8 +25,8 @@ const apiRoutes = app
       onMessage: wsHandler,
       onOpen(_, ws) {
         const rawWs = ws.raw as ServerWebSocket
-        rawWs.subscribe(WsAction.UpdateChat)
         rawWs.subscribe(WsAction.UpdateContacts)
+        rawWs.subscribe(WsAction.UpdateChannelsOfGroups)
       },
     }))
   )

@@ -15,6 +15,16 @@ export type AuthSchema = z.infer<typeof authUserData>
 export const userID = selectUserSchema.pick({
   id: true,
 })
+
+export const createChannelOfGroupData = z.object({
+  contacts: z.number().array().nonempty({
+    message: "Can't be empty!",
+  }),
+  name: z.string().trim().min(1).max(20)
+})
+
+export type CreateChannelOfGroupData = z.infer<typeof createChannelOfGroupData>
+
 export type UserID = z.infer<typeof userID>
 
 export const channelID = selectChannelSchema.pick({
@@ -68,6 +78,9 @@ export type WsNewContactFromApi = {
   contact: UserProfile
 }
 
-export type getChannelFromAPI = {
-  channelID: number
+export type WsNewChannelFromApi = {
+  eventType: string
+  channel: Channel
 }
+
+export type Channel = z.infer<typeof selectChannelSchema>

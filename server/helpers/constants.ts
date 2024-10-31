@@ -1,6 +1,6 @@
 export enum WsAction {
-  UpdateChat = 'UPDATE_CHAT',
   UpdateContacts = 'UPDATE_CONTACTS',
+  UpdateChannelsOfGroups = 'UPDATE_CHANNELS_OF_GROUPS',
   PrivateMessage = 'PRIVATE_MESSAGE',
 }
 

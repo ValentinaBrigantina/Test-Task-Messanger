@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-    ChannelID,
+    Channel,
   MessageSchemaWithAuthorData,
   WsTextDataFromApi,
 } from '@server/sharedTypes'
@@ -10,54 +10,46 @@ import { Message } from './message'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { MessageSkeleton } from './skeletons/messageSkeleton'
 import { getChannelMessagesQueryOptions } from '@/lib/api'
-import { CurrentContactContext } from '@/routes/_authenticated/_chatLayout'
 import { createPrivateChannelId } from '@/utils/helpers.ts/createPrivateChannelId'
 
 interface IMessageChannelProps {
-    channelId: ChannelID
+    channel: Channel
 }
 
-export function MessagesChannel({ channelId }: IMessageChannelProps) {
+export function MessagesChannel({ channel }: IMessageChannelProps) {
   const { isConnected, subscribe } = useWebSocket()
   const queryClient = useQueryClient()
-  const targetContact = useContext(CurrentContactContext)
-  const messagesQuery = useQuery(getChannelMessagesQueryOptions(channelId))
+  const messagesQuery = useQuery(getChannelMessagesQueryOptions(channel))
   const [messages, setMessages] = useState<MessageSchemaWithAuthorData[]>([])
   const isWsReady = isConnected()
 
   useEffect(() => {
-    return () => {
-      queryClient.invalidateQueries({
-        queryKey: getChannelMessagesQueryOptions(channelId).queryKey,
-        exact: true,
-      })
-    }
-  }, [])
+    setMessages([])
+    queryClient.invalidateQueries({
+      queryKey: getChannelMessagesQueryOptions(channel).queryKey,
+      exact: true,
+    })
+  }, [channel])
 
   useEffect(() => {
     if (messagesQuery.data?.length) {
       setMessages(messagesQuery.data)
     }
-  }, [messagesQuery.data, targetContact])
+  }, [messagesQuery.data])
+
 
   useEffect(() => {
-    if (messages.length && isWsReady) {
+    if (isWsReady) {
       subscribe((event) => {
         const data: WsTextDataFromApi = JSON.parse(event.data)
+        const topicPrivateChannel = createPrivateChannelId(channel.id)
 
-        const topicPrivateChannel = createPrivateChannelId(channelId.id)
-
-        switch (data.eventType) {
-          case topicPrivateChannel:
-            setMessages((prevMessages) => [...prevMessages, data.message])
-            break
-
-          default:
-            break
+        if (data.eventType === topicPrivateChannel) {
+          setMessages([...messages, data.message])
         }
       })
     }
-  }, [messages, isWsReady, channelId])
+  }, [channel, subscribe, isConnected()])
 
   return (
     <ul>
