@@ -133,24 +133,7 @@ export async function registration(value: AuthSchema): Promise<void> {
   }
 }
 
-// export async function getGeneralChatMessages(): Promise<
-//   MessageSchemaWithAuthorData[]
-// > {
-//   const headers = getAuthHeaders()
-//   const res = await api.chat.messages.$get({}, headers)
-//   if (!res.ok) {
-//     throw new Error('server error')
-//   }
-//   return res.json()
-// }
-
-// export const getGeneralChatMessagesQueryOptions = queryOptions({
-//   queryKey: ['get-general-chat-messages'],
-//   queryFn: getGeneralChatMessages,
-//   staleTime: Infinity,
-// })
-
-async function getChannel(value: UserID): Promise<Channel> {
+export async function getChannel(value: UserID): Promise<Channel> {
   const headers = getAuthHeaders()
   const res = await api.chat.channel.$get(
     { query: { contact: value.id.toString() } },

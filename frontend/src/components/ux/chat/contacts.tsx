@@ -21,7 +21,7 @@ export function Contacts() {
   const { isConnected, subscribe } = useWebSocket()
   const isWsReady = isConnected()
   const [contacts, setContacts] = useState<UserProfile[]>([])
-  const [channels, setChannels] = useState<Channel[]>([])
+  const [groupChannels, setGroupChannels] = useState<Channel[]>([])
 
   useEffect(() => {
     return () => {
@@ -43,12 +43,12 @@ export function Contacts() {
 
   useEffect(() => {
     if (channelsQuery.data?.length) {
-      setChannels(channelsQuery.data)
+      setGroupChannels(channelsQuery.data)
     }
   }, [channelsQuery.data])
 
   useEffect(() => {
-    if ((contacts.length || channels.length) && isWsReady) {
+    if ((contacts.length || groupChannels.length) && isWsReady) {
       subscribe((event) => {
         const data: WsNewContactFromApi | WsNewChannelFromApi = JSON.parse(
           event.data
@@ -63,7 +63,10 @@ export function Contacts() {
 
           case WsAction.UpdateChannelsOfGroups:
             if ('channel' in data) {
-              setChannels((prevChannels) => [...prevChannels, data.channel])
+              setGroupChannels((prevChannels) => [
+                ...prevChannels,
+                data.channel,
+              ])
             }
             break
 
@@ -72,14 +75,12 @@ export function Contacts() {
         }
       })
     }
-  }, [contacts, channels, isWsReady, subscribe])
+  }, [contacts, groupChannels, isConnected(), subscribe])
 
   return (
     <div className="basis-1/4 flex-none">
       <div className="flex items-center justify-between sm:mx-auto sm:w-full sm:max-w-sm">
-        <h1 className="text-lg leading-9 tracking-tight text-ring">
-          Contacts
-        </h1>
+        <h1 className="text-lg leading-9 tracking-tight text-ring">Contacts</h1>
 
         {contacts.length && (
           <div>
@@ -99,14 +100,14 @@ export function Contacts() {
           })}
         {}
         <h1 className="text-lg leading-9 tracking-tight text-ring">
-          {channelsQuery.data?.length > 0 && 'Group channels'}
+          {groupChannels.length !== 0 && 'Group channels'}
         </h1>
         {channelsQuery.isFetched &&
-          channels.map((channel) => {
+          groupChannels.map((channel) => {
             return <ChannelOfGroup channel={channel} key={channel.id} />
           })}
         {contacts.length === 0 &&
-          channels.length === 0 &&
+          groupChannels.length === 0 &&
           contactsQuery.isFetched &&
           channelsQuery.isFetched && (
             <p className="text-ring m-2">Invite your friends to the app!</p>

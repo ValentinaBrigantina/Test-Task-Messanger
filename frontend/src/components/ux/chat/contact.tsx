@@ -16,10 +16,11 @@ export function Contact({ contact }: IContactProps) {
   const context = useContext(CurrentChannelContext)
   const { data: channel } = useQuery(getChannelQueryOptions({ id: contact.id }))
 
-  const handleClick = () => {
+  const handleClick = async () => {
     context?.setCurrentTargetChannel &&
       channel &&
       context.setCurrentTargetChannel(channel)
+
     channel && navigate({ to: `/chat/${channel?.id}` })
   }
 

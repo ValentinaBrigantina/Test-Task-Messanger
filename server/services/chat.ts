@@ -114,7 +114,9 @@ const getChannelByUserIDs = (userIDs: number[]) =>
     .select({ id: channels.id, name: channels.name, isGroup: channels.isGroup })
     .from(channels)
     .innerJoin(usersToChannels, eq(channels.id, usersToChannels.channelID))
-    .where(inArray(usersToChannels.userID, userIDs))
+    .where(
+      and(inArray(usersToChannels.userID, userIDs), eq(channels.isGroup, false))
+    )
     .groupBy(channels.id, channels.name, channels.isGroup)
     .having(eq(count(usersToChannels.userID), userIDs.length))
 
