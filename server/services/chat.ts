@@ -62,7 +62,7 @@ export const createChannelOfGroup = async (
   const id = createPrivateChannelId(data.contacts)
   const [channel] = await db
     .insert(channels)
-    .values({ id: parseInt(id), name: data.name })
+    .values({ id: parseInt(id), name: data.name, isGroup: true })
     .returning()
   await linkUsersToChannel(data.contacts, channel.id)
   return channel

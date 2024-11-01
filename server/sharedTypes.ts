@@ -17,10 +17,8 @@ export const userID = selectUserSchema.pick({
 })
 
 export const createChannelOfGroupData = z.object({
-  contacts: z.number().array().nonempty({
-    message: "Can't be empty!",
-  }),
-  name: z.string().trim().min(1).max(20)
+  contacts: z.number().array(),
+  name: z.string().trim().min(1).max(60)
 })
 
 export type CreateChannelOfGroupData = z.infer<typeof createChannelOfGroupData>

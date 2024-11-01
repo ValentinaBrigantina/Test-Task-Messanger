@@ -5,6 +5,7 @@ import type {
   AuthSchema,
   Channel,
   ChannelID,
+  CreateChannelOfGroupData,
   DataUpdatePassword,
   JwtToken,
   MessageSchemaWithAuthorData,
@@ -132,22 +133,22 @@ export async function registration(value: AuthSchema): Promise<void> {
   }
 }
 
-export async function getGeneralChatMessages(): Promise<
-  MessageSchemaWithAuthorData[]
-> {
-  const headers = getAuthHeaders()
-  const res = await api.chat.messages.$get({}, headers)
-  if (!res.ok) {
-    throw new Error('server error')
-  }
-  return res.json()
-}
+// export async function getGeneralChatMessages(): Promise<
+//   MessageSchemaWithAuthorData[]
+// > {
+//   const headers = getAuthHeaders()
+//   const res = await api.chat.messages.$get({}, headers)
+//   if (!res.ok) {
+//     throw new Error('server error')
+//   }
+//   return res.json()
+// }
 
-export const getGeneralChatMessagesQueryOptions = queryOptions({
-  queryKey: ['get-general-chat-messages'],
-  queryFn: getGeneralChatMessages,
-  staleTime: Infinity,
-})
+// export const getGeneralChatMessagesQueryOptions = queryOptions({
+//   queryKey: ['get-general-chat-messages'],
+//   queryFn: getGeneralChatMessages,
+//   staleTime: Infinity,
+// })
 
 async function getChannel(value: UserID): Promise<Channel> {
   const headers = getAuthHeaders()
@@ -222,4 +223,18 @@ export function getTargetContactByChannelIdQueryOptions(channel: ChannelID) {
     queryFn: () => getTargetContactByChannelId(channel),
     staleTime: Infinity,
   })
+}
+
+export async function createGroupChat(
+  data: CreateChannelOfGroupData
+): Promise<Channel> {
+  const headers = getAuthHeaders()
+  const res = await api.chat['channels-of-groups'].$post(
+    { json: data },
+    headers
+  )
+  if (!res.ok) {
+    throw new Error('server error')
+  }
+  return res.json()
 }

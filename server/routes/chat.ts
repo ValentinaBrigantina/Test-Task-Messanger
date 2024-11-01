@@ -104,7 +104,9 @@ export const chatRoute = app
     getUser,
     zValidator('json', createChannelOfGroupData),
     async (c) => {
+      const { id } = c.var.user
       const data = c.req.valid('json')
+      data.contacts.push(id)
       const channelOfGroup: Channel = await createChannelOfGroup(data)
       server.publish(
         WsAction.UpdateChannelsOfGroups,

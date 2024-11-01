@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { IoIosAdd } from "react-icons/io"
 import { getChannelsQueryOptions, getContactsQueryOptions } from '@/lib/api'
 import { Contact } from './contact'
 import { WsAction } from '@/utils/constants'
@@ -13,12 +12,7 @@ import type {
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { ContactSkeleton } from './skeletons/contactSkeleton'
 import { ChannelOfGroup } from './channelOfGroup'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { ContactSelectionModal } from './contactSelectionModal'
 
 export function Contacts() {
   const queryClient = useQueryClient()
@@ -84,21 +78,16 @@ export function Contacts() {
     <div className="basis-1/4 flex-none">
       <div className="flex items-center justify-between sm:mx-auto sm:w-full sm:max-w-sm">
         <h1 className="text-lg leading-9 tracking-tight text-ring">
-          Contacts and groups
+          Contacts
         </h1>
-        <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger>
-              <div className="size-6 bg-primary rounded-full flex items-center text-primary-foreground hover:bg-primary/90">
-                <IoIosAdd className="size-6"/>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Add group chat</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+
+        {contacts.length && (
+          <div>
+            <ContactSelectionModal contacts={contacts} />
+          </div>
+        )}
       </div>
+
       <ul className="h-[630px] rounded-md">
         {contactsQuery.isLoading &&
           Array.from({ length: 5 }).map((_, index) => (
@@ -108,6 +97,10 @@ export function Contacts() {
           contacts.map((contact) => {
             return <Contact contact={contact} key={contact.id} />
           })}
+        {}
+        <h1 className="text-lg leading-9 tracking-tight text-ring">
+          {channelsQuery.data?.length > 0 && 'Group channels'}
+        </h1>
         {channelsQuery.isFetched &&
           channels.map((channel) => {
             return <ChannelOfGroup channel={channel} key={channel.id} />
