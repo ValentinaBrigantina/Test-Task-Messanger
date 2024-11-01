@@ -10,7 +10,7 @@ export function UserAvatar({ user }: IUserAvatarProps) {
         <div className="flex items-center gap-2">
         <Avatar>
           {user.avatar && (
-            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarImage className="object-cover" src={user.avatar} alt={user.name} />
           )}
           <AvatarFallback>{user.name}</AvatarFallback>
         </Avatar>

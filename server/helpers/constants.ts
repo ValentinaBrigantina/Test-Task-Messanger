@@ -2,6 +2,7 @@ export enum WsAction {
   UpdateContacts = 'UPDATE_CONTACTS',
   UpdateChannelsOfGroups = 'UPDATE_CHANNELS_OF_GROUPS',
   PrivateMessage = 'PRIVATE_MESSAGE',
+  GroupChannelMessage = 'GROUP_CHANNEL_MESSAGE',
 }
 
 export enum UploadsDir {

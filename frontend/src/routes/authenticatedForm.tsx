@@ -1,7 +1,12 @@
+import { Button } from '@/components/ui/button'
+import { createFileRoute } from '@tanstack/react-router'
 import { useNavigate } from '@tanstack/react-router'
-import { Button } from '../ui/button'
 
-export const AuthenticatedForm = () => {
+export const Route = createFileRoute('/authenticatedForm')({
+  component: AuthenticatedForm,
+})
+
+export function AuthenticatedForm() {
     const navigate = useNavigate()
     return (
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">

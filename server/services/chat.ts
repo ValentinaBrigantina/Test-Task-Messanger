@@ -20,7 +20,6 @@ import type {
 import { getUserByID } from './user'
 import { createUniqueName, getPath, getUrl, upload } from './upload'
 import { UploadsDir } from '../helpers/constants'
-import { createPrivateChannelId } from '../helpers/utils/createPrivateChannelId'
 
 export const saveMessage = async (
   data: MessageSchemaInsert
@@ -59,10 +58,9 @@ export const getChannelsOfGroupsWithUser = (id: number): Promise<Channel[]> =>
 export const createChannelOfGroup = async (
   data: CreateChannelOfGroupData
 ): Promise<Channel> => {
-  const id = createPrivateChannelId(data.contacts)
   const [channel] = await db
     .insert(channels)
-    .values({ id: parseInt(id), name: data.name, isGroup: true })
+    .values({ name: data.name, isGroup: true })
     .returning()
   await linkUsersToChannel(data.contacts, channel.id)
   return channel
@@ -109,8 +107,18 @@ export const uploadImage = async (file: File): Promise<string> => {
   return getUrl(name, UploadsDir.ChatImage)
 }
 
-const getChannelByUserIDs = (userIDs: number[]) =>
-  db
+const linkUsersToChannel = (userIDs: number[], channelID: number) =>
+  db.insert(usersToChannels).values(
+    userIDs.map((userID) => ({
+      userID: userID,
+      channelID: channelID,
+    }))
+  )
+
+export const getPrivateChannel = async (
+  userIDs: number[]
+): Promise<Channel> => {
+  const [channel] = await db
     .select({ id: channels.id, name: channels.name, isGroup: channels.isGroup })
     .from(channels)
     .innerJoin(usersToChannels, eq(channels.id, usersToChannels.channelID))
@@ -120,27 +128,18 @@ const getChannelByUserIDs = (userIDs: number[]) =>
     .groupBy(channels.id, channels.name, channels.isGroup)
     .having(eq(count(usersToChannels.userID), userIDs.length))
 
-const linkUsersToChannel = (userIDs: number[], channelID: number) =>
-  db.insert(usersToChannels).values(
-    userIDs.map((userID) => ({
-      userID: userID,
-      channelID: channelID,
-    }))
-  )
-
-export const getChannel = async (userIDs: number[]): Promise<Channel> => {
-  const [channel] = await getChannelByUserIDs(userIDs)
   if (!channel) {
     throw new HTTPException(404)
   }
   return channel
 }
 
-export const createChannel = async (userIDs: number[]): Promise<Channel> => {
-  const id = createPrivateChannelId(userIDs)
+export const createPrivateChannel = async (
+  userIDs: number[]
+): Promise<Channel> => {
   const [channel] = await db
     .insert(channels)
-    .values({ id: parseInt(id) })
+    .values({ isGroup: false })
     .returning()
   await linkUsersToChannel(userIDs, channel.id)
   return channel

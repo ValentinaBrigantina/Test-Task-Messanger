@@ -133,19 +133,19 @@ export async function registration(value: AuthSchema): Promise<void> {
   }
 }
 
-export async function getChannel(value: UserID): Promise<Channel> {
+export async function getPrivateChannel(value: UserID): Promise<Channel> {
   const headers = getAuthHeaders()
   const res = await api.chat.channel.$get(
     { query: { contact: value.id.toString() } },
     headers
   )
   if (!res.ok && res.status === 404) {
-    return await createChannel(value)
+    return await createPrivateChannel(value)
   }
   return res.json()
 }
 
-async function createChannel(value: UserID): Promise<Channel> {
+async function createPrivateChannel(value: UserID): Promise<Channel> {
   const headers = getAuthHeaders()
   const res = await api.chat.channel.$post(
     { query: { contact: value.id.toString() } },
@@ -160,7 +160,7 @@ async function createChannel(value: UserID): Promise<Channel> {
 export function getChannelQueryOptions(id: UserID) {
   return queryOptions({
     queryKey: ['get-channel', id],
-    queryFn: () => getChannel(id),
+    queryFn: () => getPrivateChannel(id),
   })
 }
 

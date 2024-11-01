@@ -1,5 +1,5 @@
 {
-  "id": "76292bb8-918d-4c5e-9c12-7e717acf288f",
+  "id": "e4f675ac-4942-4933-8d6c-992973d6e4f4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,7 +10,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "serial",
           "primaryKey": true,
           "notNull": true
         },
@@ -19,6 +19,13 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
+        },
+        "isGroup": {
+          "name": "isGroup",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {},
@@ -78,14 +85,7 @@
           "name": "channel_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
-        },
-        "isChat": {
-          "name": "isChat",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         }
       },
       "indexes": {},

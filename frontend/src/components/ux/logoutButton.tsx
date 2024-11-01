@@ -10,11 +10,11 @@ export function LogoutButton({ refetch }: ILogoutButtonProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('Authorization')
     queryClient.removeQueries()
-    refetch()
-    navigate({ to: '/login' })
+    navigate({ to: '/authenticatedForm' })
+    await refetch()
   }
 
   return (

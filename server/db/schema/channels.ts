@@ -1,11 +1,11 @@
 import { relations } from 'drizzle-orm'
-import { boolean, integer, pgTable, varchar } from 'drizzle-orm/pg-core'
+import { boolean, pgTable, serial, varchar } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { messages } from './messages'
 import { usersToChannels } from './usersToChannels'
 
 export const channels = pgTable('channels', {
-  id: integer('id').primaryKey(),
+  id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }),
   isGroup: boolean('isGroup').notNull().default(false),
 })

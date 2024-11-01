@@ -4,9 +4,9 @@ import { z } from 'zod'
 import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
 import {
-  createChannel,
+  createPrivateChannel,
   createChannelOfGroup,
-  getChannel,
+  getPrivateChannel,
   getChannelsOfGroupsWithUser,
   getContactsWithoutAuthor,
   getMessagesForChannel,
@@ -64,7 +64,7 @@ export const chatRoute = app
     async (c) => {
       const { id } = c.var.user
       const { contact } = c.req.valid('query')
-      const channel = await getChannel([id, parseInt(contact)])
+      const channel = await getPrivateChannel([id, parseInt(contact)])
       return c.json(channel)
     }
   )
@@ -81,7 +81,7 @@ export const chatRoute = app
     async (c) => {
       const { id } = c.var.user
       const { contact } = c.req.valid('query')
-      const channelID = await createChannel([id, parseInt(contact)])
+      const channelID = await createPrivateChannel([id, parseInt(contact)])
       c.status(201)
       return c.json(channelID)
     }

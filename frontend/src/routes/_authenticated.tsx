@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Outlet } from '@tanstack/react-router'
 import { userQueryOptions } from '@/lib/api'
-import { AuthenticatedForm } from '@/components/ux/authenticatedForm'
+import { AuthenticatedForm } from './authenticatedForm'
 
 const Component = () => {
   const { user } = Route.useRouteContext()

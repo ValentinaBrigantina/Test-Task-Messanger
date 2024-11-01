@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS "channels" (
-	"id" integer PRIMARY KEY NOT NULL,
-	"name" varchar(255)
+	"id" serial PRIMARY KEY NOT NULL,
+	"name" varchar(255),
+	"isGroup" boolean DEFAULT false NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "messages" (
@@ -11,8 +12,7 @@ CREATE TABLE IF NOT EXISTS "messages" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"author_id" integer NOT NULL,
 	"target" integer,
-	"channel_id" integer,
-	"isChat" boolean DEFAULT false NOT NULL
+	"channel_id" integer NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "users" (

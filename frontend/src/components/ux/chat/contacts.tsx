@@ -48,7 +48,7 @@ export function Contacts() {
   }, [channelsQuery.data])
 
   useEffect(() => {
-    if ((contacts.length || groupChannels.length) && isWsReady) {
+    if (isWsReady) {
       subscribe((event) => {
         const data: WsNewContactFromApi | WsNewChannelFromApi = JSON.parse(
           event.data
@@ -57,16 +57,13 @@ export function Contacts() {
         switch (data.eventType) {
           case WsAction.UpdateContacts:
             if ('contact' in data) {
-              setContacts((prevContacts) => [...prevContacts, data.contact])
+              setContacts([...contacts, data.contact])
             }
             break
 
           case WsAction.UpdateChannelsOfGroups:
             if ('channel' in data) {
-              setGroupChannels((prevChannels) => [
-                ...prevChannels,
-                data.channel,
-              ])
+              setGroupChannels([...groupChannels, data.channel])
             }
             break
 
@@ -75,14 +72,14 @@ export function Contacts() {
         }
       })
     }
-  }, [contacts, groupChannels, isConnected(), subscribe])
+  }, [isConnected(), subscribe])
 
   return (
-    <div className="basis-1/4 flex-none">
+    <div className="basis-1/4 flex-none overflow-auto h-[670px]">
       <div className="flex items-center justify-between sm:mx-auto sm:w-full sm:max-w-sm">
         <h1 className="text-lg leading-9 tracking-tight text-ring">Contacts</h1>
 
-        {contacts.length && (
+        {contacts.length !== 0 && (
           <div>
             <ContactSelectionModal contacts={contacts} />
           </div>
@@ -94,11 +91,12 @@ export function Contacts() {
           Array.from({ length: 5 }).map((_, index) => (
             <ContactSkeleton key={index} />
           ))}
+
         {contactsQuery.isFetched &&
           contacts.map((contact) => {
             return <Contact contact={contact} key={contact.id} />
           })}
-        {}
+
         <h1 className="text-lg leading-9 tracking-tight text-ring">
           {groupChannels.length !== 0 && 'Group channels'}
         </h1>

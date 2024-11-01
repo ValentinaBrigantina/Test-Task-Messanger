@@ -7,9 +7,4 @@ export const createPrivateChannelTopic = (channelId: number | null | undefined):
     }
     return channelPrefix
   }
-
-  export const createPrivateChannelId = (userIDs: number[]): string => {
-    const sortedUsersIDs = userIDs.sort((a, b) => a - b)
-    return sortedUsersIDs.join('')
-  }
   

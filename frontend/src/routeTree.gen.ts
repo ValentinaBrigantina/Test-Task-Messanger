@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as RegisterImport } from './routes/register'
 import { Route as LoginImport } from './routes/login'
+import { Route as AuthenticatedFormImport } from './routes/authenticatedForm'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProfileImport } from './routes/_authenticated/profile'
@@ -31,6 +32,12 @@ const RegisterRoute = RegisterImport.update({
 const LoginRoute = LoginImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthenticatedFormRoute = AuthenticatedFormImport.update({
+  id: '/authenticatedForm',
+  path: '/authenticatedForm',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -79,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthenticatedImport
+      parentRoute: typeof rootRoute
+    }
+    '/authenticatedForm': {
+      id: '/authenticatedForm'
+      path: '/authenticatedForm'
+      fullPath: '/authenticatedForm'
+      preLoaderRoute: typeof AuthenticatedFormImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -183,6 +197,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '': typeof AuthenticatedChatLayoutRouteWithChildren
+  '/authenticatedForm': typeof AuthenticatedFormRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -192,6 +207,7 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
+  '/authenticatedForm': typeof AuthenticatedFormRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '': typeof AuthenticatedChatLayoutRouteWithChildren
@@ -204,6 +220,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/authenticatedForm': typeof AuthenticatedFormRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/_authenticated/_chatLayout': typeof AuthenticatedChatLayoutRouteWithChildren
@@ -217,6 +234,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
+    | '/authenticatedForm'
     | '/login'
     | '/register'
     | '/profile'
@@ -225,6 +243,7 @@ export interface FileRouteTypes {
     | '/chat/$channelId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/authenticatedForm'
     | '/login'
     | '/register'
     | ''
@@ -235,6 +254,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_authenticated'
+    | '/authenticatedForm'
     | '/login'
     | '/register'
     | '/_authenticated/_chatLayout'
@@ -247,12 +267,14 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthenticatedFormRoute: typeof AuthenticatedFormRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthenticatedFormRoute: AuthenticatedFormRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
 }
@@ -270,6 +292,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_authenticated",
+        "/authenticatedForm",
         "/login",
         "/register"
       ]
@@ -281,6 +304,9 @@ export const routeTree = rootRoute
         "/_authenticated/profile",
         "/_authenticated/"
       ]
+    },
+    "/authenticatedForm": {
+      "filePath": "authenticatedForm.tsx"
     },
     "/login": {
       "filePath": "login.tsx"

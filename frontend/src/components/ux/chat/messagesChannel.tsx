@@ -10,7 +10,7 @@ import { Message } from './message'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { MessageSkeleton } from './skeletons/messageSkeleton'
 import { getChannelMessagesQueryOptions } from '@/lib/api'
-import { createPrivateChannelId } from '@/utils/helpers.ts/createPrivateChannelId'
+import { createTopicPrivateChannel } from '@/utils/helpers.ts/createPrivateChannelId'
 
 interface IMessageChannelProps {
     channel: Channel
@@ -42,9 +42,11 @@ export function MessagesChannel({ channel }: IMessageChannelProps) {
     if (isWsReady) {
       subscribe((event) => {
         const data: WsTextDataFromApi = JSON.parse(event.data)
-        const topicPrivateChannel = createPrivateChannelId(channel.id)
+        const topicPrivateChannel = createTopicPrivateChannel(channel.id)
 
         if (data.eventType === topicPrivateChannel) {
+          console.log('messages: ', messages)
+          console.log('data.message: ', data.message)
           setMessages([...messages, data.message])
         }
       })

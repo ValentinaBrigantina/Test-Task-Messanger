@@ -11,7 +11,7 @@ import {
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { messageFormSchema } from '@/utils/customValidation/messageFormSchema'
 import { FileInputSendMessage } from './inputFileSendMessage'
-import { createPrivateChannelId } from '@/utils/helpers.ts/createPrivateChannelId'
+import { createTopicPrivateChannel } from '@/utils/helpers.ts/createPrivateChannelId'
 import { imageSchema } from '@/utils/customValidation/imageSchema'
 import type { ChannelID, WsTextDataFromClient } from '@server/sharedTypes'
 import { MessageType } from '@/utils/constants'
@@ -45,7 +45,7 @@ export function SendMessageForm({ channel }: ISendMessageFormProps) {
 
       let messageData: WsTextDataFromClient
       if (isWsReady && userData && channel) {
-        const topicPrivateChannel = createPrivateChannelId(channel.id)
+        const topicPrivateChannel = createTopicPrivateChannel(channel.id)
 
         messageData = {
           eventType: topicPrivateChannel,

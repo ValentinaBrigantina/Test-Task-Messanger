@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1730306333056,
-      "tag": "0000_flippant_blindfold",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1730364814852,
-      "tag": "0001_kind_black_bird",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1730379700919,
-      "tag": "0002_amusing_agent_brand",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1730380766112,
-      "tag": "0003_charming_psylocke",
+      "when": 1730467598129,
+      "tag": "0000_brief_timeslip",
       "breakpoints": true
     }
   ]
