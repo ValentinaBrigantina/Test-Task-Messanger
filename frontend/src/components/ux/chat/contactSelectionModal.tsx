@@ -49,7 +49,10 @@ export function ContactSelectionModal({
         name: value.name.trim(),
       }
       await createGroupChat(data)
+
+      form.reset()
       setOpen(false)
+
     },
   })
 
