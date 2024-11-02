@@ -25,3 +25,4 @@ export const insertUserSchema = createInsertSchema(users)
 export const selectUserSchema = createSelectSchema(users)
 
 export type UserSchemaSelect = z.infer<typeof selectUserSchema>
+export type UserSchemaInsert = z.infer<typeof insertUserSchema>

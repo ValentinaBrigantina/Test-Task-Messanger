@@ -42,3 +42,11 @@ bun db:up // run docker container with database
 bun db:migrate // for schema migration
 bun db:studio // launch Drizzle Studio https://local.drizzle.studio
 ```
+
+#### notes
+For create Admin
+```bash
+curl -X POST http://localhost:3000/api/admin/create \
+-H "Content-Type: application/json" \
+-d '{"name": "Admin", "password": "Admin"}'
+```

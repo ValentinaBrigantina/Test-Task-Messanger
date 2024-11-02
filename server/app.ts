@@ -11,6 +11,7 @@ import { chatRoute } from './routes/chat'
 import { wsHandler, type CustomWSContext } from './helpers/webSocket'
 import { wsStore } from './index'
 import { WsAction } from './helpers/constants'
+import { adminRoute } from './routes/admin'
 
 const app = new Hono()
 const { upgradeWebSocket, websocket } = createBunWebSocket()
@@ -48,6 +49,7 @@ const apiRoutes = app
   .route('/', authRoute)
   .route('/profile', profileRoute)
   .route('/chat', chatRoute)
+  .route('/admin', adminRoute)
   .get('*', serveStatic({ root: './frontend/dist' }))
   .get('*', serveStatic({ path: './frontend/dist/index.html' }))
 

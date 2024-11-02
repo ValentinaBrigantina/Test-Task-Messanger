@@ -6,6 +6,7 @@ import type {
 import { insertUserSchema, selectUserSchema } from './db/schema/users'
 import { selectChannelSchema } from './db/schema/channels'
 import type { WsAction } from './helpers/constants'
+import { Role } from './helpers/getUser'
 
 export const authUserData = insertUserSchema.pick({
   name: true,
@@ -51,7 +52,7 @@ export type UserProfile = z.infer<typeof userProfile>
 
 const payloadData = selectUserSchema.pick({
   id: true,
-  name: true,
+  role: true,
 })
 export type PayloadUserData = z.infer<typeof payloadData>
 

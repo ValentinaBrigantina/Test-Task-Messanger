@@ -4,14 +4,13 @@ import type { JWTPayload } from 'hono/utils/jwt/types'
 import * as bcrypt from 'bcryptjs'
 
 import { db } from '../db'
-import { users as usersTable } from '../db/schema/users'
+import { users as usersTable, type UserSchemaInsert } from '../db/schema/users'
 import type {
   AuthSchema,
   JwtToken,
   PayloadUserData,
   UserProfile,
 } from '../sharedTypes'
-import { Role } from '../helpers/getUser'
 import { getUserByName } from './user'
 
 const secretJwtKey = process.env.JWT_KEY || 'secret'
@@ -42,7 +41,7 @@ export const compareHash = (hash: string, string: string) =>
   bcrypt.compare(hash, string)
 
 export const registration = async (
-  authData: AuthSchema
+  authData: UserSchemaInsert
 ): Promise<UserProfile> => {
   const isExist = !!(await getUserByName(authData.name))
   if (isExist) {
@@ -51,7 +50,7 @@ export const registration = async (
   const hashPassword = await createHash(authData.password)
   const [{ password, ...user }] = await db
     .insert(usersTable)
-    .values({ ...authData, role: Role.User, password: hashPassword })
+    .values({ ...authData, password: hashPassword })
     .returning()
 
   return user
@@ -65,6 +64,9 @@ export const login = async (authData: AuthSchema): Promise<JwtToken> => {
   if (!isCorrectPassword || !user) {
     throw new HTTPException(401)
   }
-  const token = await createJwtToken({ id: user.id, name: user.name })
+  const token = await createJwtToken({
+    id: user.id,
+    role: user.role,
+  })
   return { token: `Bearer ${token}` }
 }
