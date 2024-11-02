@@ -4,9 +4,8 @@ import { z } from 'zod'
 import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
 import {
-  createPrivateChannel,
   createChannelOfGroup,
-  getPrivateChannel,
+  getOrCreatePrivateChannel,
   getChannelsOfGroupsWithUser,
   getContactsWithoutAuthor,
   getMessagesForChannel,
@@ -22,8 +21,7 @@ import {
   imageSchema,
   type ValidImage,
 } from '../helpers/customValidation/imageSchema'
-import { server } from '..'
-import { WsAction } from '../helpers/constants'
+import { wsHandlerUpdateChannelsOfGroups } from '../helpers/webSocket'
 
 const app = new Hono()
 
@@ -52,25 +50,8 @@ export const chatRoute = app
     return c.json(url)
   })
 
-  .get(
-    '/channel',
-    getUser,
-    zValidator(
-      'query',
-      z.object({
-        contact: z.string(),
-      })
-    ),
-    async (c) => {
-      const { id } = c.var.user
-      const { contact } = c.req.valid('query')
-      const channel = await getPrivateChannel([id, parseInt(contact)])
-      return c.json(channel)
-    }
-  )
-
   .post(
-    '/channel',
+    '/private-channel',
     getUser,
     zValidator(
       'query',
@@ -81,7 +62,7 @@ export const chatRoute = app
     async (c) => {
       const { id } = c.var.user
       const { contact } = c.req.valid('query')
-      const channelID = await createPrivateChannel([id, parseInt(contact)])
+      const channelID = await getOrCreatePrivateChannel([id, parseInt(contact)])
       c.status(201)
       return c.json(channelID)
     }
@@ -108,13 +89,7 @@ export const chatRoute = app
       const data = c.req.valid('json')
       data.contacts.push(id)
       const channelOfGroup: Channel = await createChannelOfGroup(data)
-      server.publish(
-        WsAction.UpdateChannelsOfGroups,
-        JSON.stringify({
-          eventType: WsAction.UpdateChannelsOfGroups,
-          channel: channelOfGroup,
-        })
-      )
+      await wsHandlerUpdateChannelsOfGroups(channelOfGroup)
       c.status(201)
       return c.json(channelOfGroup)
     }

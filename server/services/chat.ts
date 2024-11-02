@@ -13,9 +13,10 @@ import { usersToChannels } from '../db/schema/usersToChannels'
 import type {
   Channel,
   CreateChannelOfGroupData,
+  GroupChannelMessagePayloadApi,
   MessageSchemaWithAuthorData,
+  PrivateMessagePayloadApi,
   UserProfile,
-  WsTextDataFromApi,
 } from '../sharedTypes'
 import { getUserByID } from './user'
 import { createUniqueName, getPath, getUrl, upload } from './upload'
@@ -89,15 +90,12 @@ export const getMessagesForChannel = (
     .innerJoin(users, eq(messages.authorID, users.id))
     .where(eq(messages.channelID, channelID))
 
-export const getMessageWithAuthorProfile = async (
-  { authorID, ...dataMessage }: MessageSchemaSelect,
-  topic: string
-): Promise<WsTextDataFromApi> => {
+export const getMessageWithAuthorProfile = async ({
+  authorID,
+  ...dataMessage
+}: MessageSchemaSelect): Promise<MessageSchemaWithAuthorData> => {
   const { password, ...author } = await getUserByID(authorID)
-  return {
-    eventType: topic,
-    message: { ...dataMessage, author },
-  }
+  return { ...dataMessage, author }
 }
 
 export const uploadImage = async (file: File): Promise<string> => {
@@ -115,7 +113,7 @@ const linkUsersToChannel = (userIDs: number[], channelID: number) =>
     }))
   )
 
-export const getPrivateChannel = async (
+export const getOrCreatePrivateChannel = async (
   userIDs: number[]
 ): Promise<Channel> => {
   const [channel] = await db
@@ -129,7 +127,7 @@ export const getPrivateChannel = async (
     .having(eq(count(usersToChannels.userID), userIDs.length))
 
   if (!channel) {
-    throw new HTTPException(404)
+    return createPrivateChannel(userIDs)
   }
   return channel
 }
@@ -181,4 +179,11 @@ export const getTargetContactByChannelId = async (
       )
     )
   return contact
+}
+
+export const getPayloadToSend = async (
+  payload: GroupChannelMessagePayloadApi | PrivateMessagePayloadApi
+): Promise<MessageSchemaWithAuthorData> => {
+  const savedMessage: MessageSchemaSelect = await saveMessage(payload)
+  return getMessageWithAuthorProfile(savedMessage)
 }

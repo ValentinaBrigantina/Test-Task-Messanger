@@ -13,22 +13,11 @@ import type {
   UserProfile,
 } from '@server/sharedTypes'
 import { apiHost } from '@/utils/config'
+import { getAuthHeaders } from './utils'
 
 const client = hc<ApiRoutes>(apiHost)
 
 export const api = client.api
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('Authorization')
-  if (!token) {
-    throw new Error('Authorization token is missing')
-  }
-  return {
-    headers: {
-      ...(token && { Authorization: token }),
-    },
-  }
-}
 
 async function getCurrentUser(): Promise<{ user: UserProfile }> {
   const headers = getAuthHeaders()
@@ -133,21 +122,9 @@ export async function registration(value: AuthSchema): Promise<void> {
   }
 }
 
-export async function getPrivateChannel(value: UserID): Promise<Channel> {
+async function getOrCreatePrivateChannel(value: UserID): Promise<Channel> {
   const headers = getAuthHeaders()
-  const res = await api.chat.channel.$get(
-    { query: { contact: value.id.toString() } },
-    headers
-  )
-  if (!res.ok && res.status === 404) {
-    return await createPrivateChannel(value)
-  }
-  return res.json()
-}
-
-async function createPrivateChannel(value: UserID): Promise<Channel> {
-  const headers = getAuthHeaders()
-  const res = await api.chat.channel.$post(
+  const res = await api.chat['private-channel'].$post(
     { query: { contact: value.id.toString() } },
     headers
   )
@@ -160,7 +137,8 @@ async function createPrivateChannel(value: UserID): Promise<Channel> {
 export function getChannelQueryOptions(id: UserID) {
   return queryOptions({
     queryKey: ['get-channel', id],
-    queryFn: () => getPrivateChannel(id),
+    queryFn: () => getOrCreatePrivateChannel(id),
+    staleTime: Infinity,
   })
 }
 

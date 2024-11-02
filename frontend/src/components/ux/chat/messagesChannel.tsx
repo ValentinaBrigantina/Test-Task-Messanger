@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-    Channel,
+import type {
+  Channel,
   MessageSchemaWithAuthorData,
-  WsTextDataFromApi,
+  PrivateMessagePayloadClient,
+  WsMessageTypeClient,
 } from '@server/sharedTypes'
 import { formatDate, IDate } from '@/utils/helpers.ts/formatDate'
 import { Message } from './message'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { MessageSkeleton } from './skeletons/messageSkeleton'
 import { getChannelMessagesQueryOptions } from '@/lib/api'
-import { createTopicPrivateChannel } from '@/utils/helpers.ts/createPrivateChannelId'
+import { WsAction } from '@/utils/constants'
 
 interface IMessageChannelProps {
-    channel: Channel
+  channel: Channel
 }
 
 export function MessagesChannel({ channel }: IMessageChannelProps) {
@@ -29,7 +30,7 @@ export function MessagesChannel({ channel }: IMessageChannelProps) {
       queryKey: getChannelMessagesQueryOptions(channel).queryKey,
       exact: true,
     })
-  }, [channel])
+  }, [channel, queryClient])
 
   useEffect(() => {
     if (messagesQuery.data?.length) {
@@ -37,21 +38,46 @@ export function MessagesChannel({ channel }: IMessageChannelProps) {
     }
   }, [messagesQuery.data])
 
-
   useEffect(() => {
     if (isWsReady) {
       subscribe((event) => {
-        const data: WsTextDataFromApi = JSON.parse(event.data)
-        const topicPrivateChannel = createTopicPrivateChannel(channel.id)
+        const data: WsMessageTypeClient = JSON.parse(event.data)
 
-        if (data.eventType === topicPrivateChannel) {
-          console.log('messages: ', messages)
-          console.log('data.message: ', data.message)
-          setMessages([...messages, data.message])
+        switch (data.eventType) {
+          case WsAction.PrivateMessage:
+            const privateMessagePayload =
+              data.payload as PrivateMessagePayloadClient
+            if (privateMessagePayload.channelID === channel.id) {
+              setMessages((prevMessages) =>
+                prevMessages.some(
+                  (message) => message.id === privateMessagePayload.id
+                )
+                  ? prevMessages
+                  : [...prevMessages, privateMessagePayload]
+              )
+            }
+            break
+
+          case WsAction.GroupChannelMessage:
+            const groupChannelMessagePayload =
+              data.payload as MessageSchemaWithAuthorData
+            if (groupChannelMessagePayload.channelID === channel.id) {
+              setMessages((prevMessages) =>
+                prevMessages.some(
+                  (message) => message.id === groupChannelMessagePayload.id
+                )
+                  ? prevMessages
+                  : [...prevMessages, groupChannelMessagePayload]
+              )
+            }
+            break
+
+          default:
+            break
         }
       })
     }
-  }, [channel, subscribe, isConnected()])
+  }, [channel, subscribe, isWsReady])
 
   return (
     <ul>

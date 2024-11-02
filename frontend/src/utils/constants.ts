@@ -3,6 +3,7 @@ export enum WsAction {
   UpdateChannelsOfGroups = 'UPDATE_CHANNELS_OF_GROUPS',
   PrivateMessage = 'PRIVATE_MESSAGE',
   GroupChannelMessage = 'GROUP_CHANNEL_MESSAGE',
+  Auth = 'AUTH',
 }
 
 export enum MessageType {

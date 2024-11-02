@@ -6,8 +6,7 @@ import { WsAction } from '@/utils/constants'
 import type {
   Channel,
   UserProfile,
-  WsNewChannelFromApi,
-  WsNewContactFromApi,
+  WsMessageTypeClient,
 } from '@server/sharedTypes'
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { ContactSkeleton } from './skeletons/contactSkeleton'
@@ -26,10 +25,6 @@ export function Contacts() {
   useEffect(() => {
     return () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          getContactsQueryOptions.queryKey,
-          getChannelsQueryOptions.queryKey,
-        ],
         exact: true,
       })
     }
@@ -50,21 +45,29 @@ export function Contacts() {
   useEffect(() => {
     if (isWsReady) {
       subscribe((event) => {
-        const data: WsNewContactFromApi | WsNewChannelFromApi = JSON.parse(
-          event.data
-        )
+        const data: WsMessageTypeClient = JSON.parse(event.data)
 
         switch (data.eventType) {
           case WsAction.UpdateContacts:
-            if ('contact' in data) {
-              setContacts([...contacts, data.contact])
-            }
+            const updateContactsPayload = data.payload as UserProfile
+            setContacts((prevContacts) =>
+              prevContacts.some(
+                (contact) => contact.id === updateContactsPayload.id
+              )
+                ? prevContacts
+                : [...prevContacts, updateContactsPayload]
+            )
             break
 
           case WsAction.UpdateChannelsOfGroups:
-            if ('channel' in data) {
-              setGroupChannels([...groupChannels, data.channel])
-            }
+            const updateChannelsOfGroupsPayload = data.payload as Channel
+            setGroupChannels((prevGroupChannels) =>
+              prevGroupChannels.some(
+                (groupChannel) => groupChannel.id === updateChannelsOfGroupsPayload.id
+              )
+                ? prevGroupChannels
+                : [...prevGroupChannels, updateChannelsOfGroupsPayload]
+            )
             break
 
           default:
@@ -72,7 +75,7 @@ export function Contacts() {
         }
       })
     }
-  }, [isConnected(), subscribe])
+  }, [isWsReady, contacts, groupChannels])
 
   return (
     <div className="basis-1/4 flex-none overflow-auto h-[670px]">

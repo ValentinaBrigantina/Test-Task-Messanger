@@ -8,8 +8,9 @@ import { cors } from 'hono/cors'
 import { authRoute } from './routes/auth'
 import { profileRoute } from './routes/profile'
 import { chatRoute } from './routes/chat'
-import { wsHandler } from './helpers/webSocket'
-import { WsAction } from '../frontend/src/utils/constants'
+import { wsHandler, type CustomWSContext } from './helpers/webSocket'
+import { wsStore } from './index'
+import { WsAction } from './helpers/constants'
 
 const app = new Hono()
 const { upgradeWebSocket, websocket } = createBunWebSocket()
@@ -25,9 +26,23 @@ const apiRoutes = app
       onMessage: wsHandler,
       onOpen(_, ws) {
         const rawWs = ws.raw as ServerWebSocket
+        rawWs.subscribe(WsAction.Auth)
         rawWs.subscribe(WsAction.UpdateContacts)
         rawWs.subscribe(WsAction.UpdateChannelsOfGroups)
+        rawWs.subscribe(WsAction.PrivateMessage)
+        rawWs.subscribe(WsAction.GroupChannelMessage)
       },
+      onClose(_, ws: CustomWSContext) {
+        const rawWs = ws.raw as ServerWebSocket
+        rawWs.unsubscribe(WsAction.Auth)
+        rawWs.unsubscribe(WsAction.UpdateContacts)
+        rawWs.unsubscribe(WsAction.UpdateChannelsOfGroups)
+        rawWs.unsubscribe(WsAction.PrivateMessage)
+        rawWs.unsubscribe(WsAction.GroupChannelMessage)
+        if (ws._userId) {
+          wsStore.remove(ws._userId)
+        }
+      }
     }))
   )
   .route('/', authRoute)

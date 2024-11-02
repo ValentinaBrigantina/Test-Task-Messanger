@@ -5,6 +5,7 @@ import type {
 } from './db/schema/messages'
 import { insertUserSchema, selectUserSchema } from './db/schema/users'
 import { selectChannelSchema } from './db/schema/channels'
+import type { WsAction } from './helpers/constants'
 
 export const authUserData = insertUserSchema.pick({
   name: true,
@@ -48,7 +49,7 @@ const userProfile = selectUserSchema.pick({
 })
 export type UserProfile = z.infer<typeof userProfile>
 
-const payloadData = insertUserSchema.pick({
+const payloadData = selectUserSchema.pick({
   id: true,
   name: true,
 })
@@ -61,24 +62,22 @@ export type MessageSchemaWithAuthorData = Omit<
   author: UserProfile
 }
 
-export type WsTextDataFromClient = {
-  eventType: string
-  message: MessageSchemaInsert
+export type PrivateMessagePayloadApi = Omit<MessageSchemaInsert, 'targetID'> & { targetID: number }
+export type GroupChannelMessagePayloadApi = MessageSchemaInsert
+export type AuthMessagePayloadApi = {
+  token: string
 }
 
-export type WsTextDataFromApi = {
-  eventType: string
-  message: MessageSchemaWithAuthorData
+export type WsMessageTypeApi = {
+  eventType: WsAction
+  payload: PrivateMessagePayloadApi | AuthMessagePayloadApi | GroupChannelMessagePayloadApi
 }
 
-export type WsNewContactFromApi = {
-  eventType: string
-  contact: UserProfile
-}
+export type PrivateMessagePayloadClient = Omit<MessageSchemaWithAuthorData, 'targetID'> & { targetID: number }
 
-export type WsNewChannelFromApi = {
-  eventType: string
-  channel: Channel
+export type WsMessageTypeClient = {
+  eventType: WsAction
+  payload: Channel | UserProfile | PrivateMessagePayloadClient
 }
 
 export type Channel = z.infer<typeof selectChannelSchema>

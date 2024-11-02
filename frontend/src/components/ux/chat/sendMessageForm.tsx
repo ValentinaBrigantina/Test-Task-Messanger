@@ -11,10 +11,14 @@ import {
 import { useWebSocket } from '@/utils/hooks/useWebSocket'
 import { messageFormSchema } from '@/utils/customValidation/messageFormSchema'
 import { FileInputSendMessage } from './inputFileSendMessage'
-import { createTopicPrivateChannel } from '@/utils/helpers.ts/createPrivateChannelId'
 import { imageSchema } from '@/utils/customValidation/imageSchema'
-import type { ChannelID, WsTextDataFromClient } from '@server/sharedTypes'
-import { MessageType } from '@/utils/constants'
+import type {
+  ChannelID,
+  GroupChannelMessagePayloadApi,
+  PrivateMessagePayloadApi,
+  WsMessageTypeApi,
+} from '@server/sharedTypes'
+import { MessageType, WsAction } from '@/utils/constants'
 
 type FormData = {
   text: string | undefined
@@ -43,21 +47,17 @@ export function SendMessageForm({ channel }: ISendMessageFormProps) {
         return
       }
 
-      let messageData: WsTextDataFromClient
       if (isWsReady && userData && channel) {
-        const topicPrivateChannel = createTopicPrivateChannel(channel.id)
-
-        messageData = {
-          eventType: topicPrivateChannel,
-          message: {
-            text: value.text,
-            authorID: userData?.user.id,
-            type: MessageType.Text,
-            channelID: channel.id,
-          },
+        const messageData:
+          | PrivateMessagePayloadApi
+          | GroupChannelMessagePayloadApi = {
+          text: value.text,
+          authorID: userData?.user.id,
+          type: MessageType.Text,
+          channelID: channel.id,
         }
         if (targetContactQuery?.data) {
-          messageData.message.targetID = targetContactQuery?.data.id
+          messageData.targetID = targetContactQuery.data.id
         }
 
         if (value.image) {
@@ -71,15 +71,18 @@ export function SendMessageForm({ channel }: ISendMessageFormProps) {
           formData.set('image', value.image)
           try {
             const src = await sendImageInMessage(formData)
-            messageData.message.src = src
-            messageData.message.type = MessageType.Image
+            messageData.src = src
+            messageData.type = MessageType.Image
             form.setFieldValue('image', null)
           } catch (error) {
             form.setFieldValue('image', null)
             toast.error('Failed to send image')
           }
         }
-        send(messageData)
+        const wsMessage: WsMessageTypeApi = messageData.targetID
+          ? { eventType: WsAction.PrivateMessage, payload: messageData }
+          : { eventType: WsAction.GroupChannelMessage, payload: messageData }
+        send(wsMessage)
         form.setFieldValue('text', '')
       }
     },

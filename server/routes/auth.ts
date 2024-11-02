@@ -6,8 +6,7 @@ import { authMiddleware } from '../helpers/bearerAuth'
 import { getUser } from '../helpers/getUser'
 import { authUserData, type JwtToken, type UserProfile } from '../sharedTypes'
 import type { UserSchemaSelect } from '../db/schema/users'
-import { server } from '../index'
-import { WsAction } from '../helpers/constants'
+import { wsHandlerUpdateContacts } from '../helpers/webSocket'
 
 type Variables = JwtVariables
 
@@ -22,10 +21,7 @@ export const authRoute = new Hono<{ Variables: Variables }>()
   .post('/register', zValidator('json', authUserData), async (c) => {
     const authData = c.req.valid('json')
     const user: UserProfile = await registration(authData)
-    server.publish(
-      WsAction.UpdateContacts,
-      JSON.stringify({ eventType: WsAction.UpdateContacts, contact: user })
-    )
+    wsHandlerUpdateContacts(user)
     c.status(201)
     return c.json(user)
   })

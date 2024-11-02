@@ -1,5 +1,6 @@
 import { api } from '@/lib/api'
 import { useEffect } from 'react'
+import { getAuthHandshake } from '../helpers.ts/getAuthHandShake'
 
 export type ConnectionCb = (event: MessageEvent<any>) => void
 
@@ -19,6 +20,11 @@ export const useWebSocket = (): IUseWebSocket => {
 
       ws.addEventListener('close', () => {
         ws = null
+      })
+
+      ws.addEventListener('open', () => {
+        const dataToSend = getAuthHandshake()
+        dataToSend && ws && ws.send(JSON.stringify(dataToSend))
       })
     }
   }, [])

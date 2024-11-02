@@ -1,5 +1,6 @@
 import { HTTPException } from 'hono/http-exception'
 import { decode, sign, verify } from 'hono/jwt'
+import type { JWTPayload } from 'hono/utils/jwt/types'
 import * as bcrypt from 'bcryptjs'
 
 import { db } from '../db'
@@ -15,7 +16,7 @@ import { getUserByName } from './user'
 
 const secretJwtKey = process.env.JWT_KEY || 'secret'
 
-export const checkValidToken = async (token: string) => {
+export const checkValidToken = async (token: string): Promise<JWTPayload> => {
   try {
     return await verify(token, secretJwtKey)
   } catch (error) {
@@ -23,7 +24,7 @@ export const checkValidToken = async (token: string) => {
   }
 }
 
-export const getDataFromToken = async (token: string) => {
+export const getDataFromToken = (token: string): JWTPayload => {
   const { payload } = decode(token)
   return payload
 }
