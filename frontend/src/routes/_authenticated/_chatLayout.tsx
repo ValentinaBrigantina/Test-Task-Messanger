@@ -7,6 +7,7 @@ export interface ICurrentChannelContext {
   currentTargetChannel: Channel | null
   setCurrentTargetChannel: (channel: Channel | null) => void
 }
+
 export const CurrentChannelContext =
   createContext<ICurrentChannelContext | null>(null)
 

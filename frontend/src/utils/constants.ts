@@ -12,3 +12,8 @@ export enum MessageType {
   Video = 3,
   File = 4,
 }
+
+export enum Role {
+  User = 'USER',
+  Admin = 'ADMIN',
+}

@@ -199,3 +199,18 @@ export async function createGroupChat(
   }
   return res.json()
 }
+
+export async function getDataUsers():Promise<UserProfile[]> {
+  const headers = getAuthHeaders()
+  const res = await api.admin.$get({}, headers)
+  if (!res.ok) {
+    throw new Error('server error')
+  }
+  return res.json()
+}
+
+export const getDataUsersQueryOptions = queryOptions({
+  queryKey: ['get-data-users'],
+  queryFn: getDataUsers,
+  staleTime: Infinity,
+})

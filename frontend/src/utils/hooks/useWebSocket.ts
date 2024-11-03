@@ -1,8 +1,7 @@
 import { api } from '@/lib/api'
 import { useEffect } from 'react'
 import { getAuthHandshake } from '../helpers.ts/getAuthHandShake'
-
-export type ConnectionCb = (event: MessageEvent<any>) => void
+import { ConnectionCb } from '../types'
 
 interface IUseWebSocket {
   isConnected: () => boolean

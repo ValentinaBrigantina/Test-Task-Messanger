@@ -15,9 +15,11 @@ import { Route as RegisterImport } from './routes/register'
 import { Route as LoginImport } from './routes/login'
 import { Route as AuthenticatedFormImport } from './routes/authenticatedForm'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
+import { Route as AdminAuthenticatedImport } from './routes/_adminAuthenticated'
 import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProfileImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedChatLayoutImport } from './routes/_authenticated/_chatLayout'
+import { Route as AdminAuthenticatedAdminImport } from './routes/_adminAuthenticated/admin'
 import { Route as AuthenticatedChatLayoutChatImport } from './routes/_authenticated/_chatLayout/chat'
 import { Route as AuthenticatedChatLayoutChatChannelIdImport } from './routes/_authenticated/_chatLayout/chat.$channelId'
 
@@ -46,6 +48,11 @@ const AuthenticatedRoute = AuthenticatedImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AdminAuthenticatedRoute = AdminAuthenticatedImport.update({
+  id: '/_adminAuthenticated',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AuthenticatedIndexRoute = AuthenticatedIndexImport.update({
   id: '/',
   path: '/',
@@ -61,6 +68,12 @@ const AuthenticatedProfileRoute = AuthenticatedProfileImport.update({
 const AuthenticatedChatLayoutRoute = AuthenticatedChatLayoutImport.update({
   id: '/_chatLayout',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+
+const AdminAuthenticatedAdminRoute = AdminAuthenticatedAdminImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AdminAuthenticatedRoute,
 } as any)
 
 const AuthenticatedChatLayoutChatRoute =
@@ -81,6 +94,13 @@ const AuthenticatedChatLayoutChatChannelIdRoute =
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_adminAuthenticated': {
+      id: '/_adminAuthenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AdminAuthenticatedImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -108,6 +128,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/register'
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
+    }
+    '/_adminAuthenticated/admin': {
+      id: '/_adminAuthenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminAuthenticatedAdminImport
+      parentRoute: typeof AdminAuthenticatedImport
     }
     '/_authenticated/_chatLayout': {
       id: '/_authenticated/_chatLayout'
@@ -148,6 +175,17 @@ declare module '@tanstack/react-router' {
 }
 
 // Create and export the route tree
+
+interface AdminAuthenticatedRouteChildren {
+  AdminAuthenticatedAdminRoute: typeof AdminAuthenticatedAdminRoute
+}
+
+const AdminAuthenticatedRouteChildren: AdminAuthenticatedRouteChildren = {
+  AdminAuthenticatedAdminRoute: AdminAuthenticatedAdminRoute,
+}
+
+const AdminAuthenticatedRouteWithChildren =
+  AdminAuthenticatedRoute._addFileChildren(AdminAuthenticatedRouteChildren)
 
 interface AuthenticatedChatLayoutChatRouteChildren {
   AuthenticatedChatLayoutChatChannelIdRoute: typeof AuthenticatedChatLayoutChatChannelIdRoute
@@ -200,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/authenticatedForm': typeof AuthenticatedFormRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/admin': typeof AdminAuthenticatedAdminRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/': typeof AuthenticatedIndexRoute
   '/chat': typeof AuthenticatedChatLayoutChatRouteWithChildren
@@ -207,10 +246,11 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
+  '': typeof AuthenticatedChatLayoutRouteWithChildren
   '/authenticatedForm': typeof AuthenticatedFormRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '': typeof AuthenticatedChatLayoutRouteWithChildren
+  '/admin': typeof AdminAuthenticatedAdminRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/': typeof AuthenticatedIndexRoute
   '/chat': typeof AuthenticatedChatLayoutChatRouteWithChildren
@@ -219,10 +259,12 @@ export interface FileRoutesByTo {
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/_adminAuthenticated': typeof AdminAuthenticatedRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/authenticatedForm': typeof AuthenticatedFormRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/_adminAuthenticated/admin': typeof AdminAuthenticatedAdminRoute
   '/_authenticated/_chatLayout': typeof AuthenticatedChatLayoutRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -237,26 +279,30 @@ export interface FileRouteTypes {
     | '/authenticatedForm'
     | '/login'
     | '/register'
+    | '/admin'
     | '/profile'
     | '/'
     | '/chat'
     | '/chat/$channelId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | ''
     | '/authenticatedForm'
     | '/login'
     | '/register'
-    | ''
+    | '/admin'
     | '/profile'
     | '/'
     | '/chat'
     | '/chat/$channelId'
   id:
     | '__root__'
+    | '/_adminAuthenticated'
     | '/_authenticated'
     | '/authenticatedForm'
     | '/login'
     | '/register'
+    | '/_adminAuthenticated/admin'
     | '/_authenticated/_chatLayout'
     | '/_authenticated/profile'
     | '/_authenticated/'
@@ -266,6 +312,7 @@ export interface FileRouteTypes {
 }
 
 export interface RootRouteChildren {
+  AdminAuthenticatedRoute: typeof AdminAuthenticatedRouteWithChildren
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthenticatedFormRoute: typeof AuthenticatedFormRoute
   LoginRoute: typeof LoginRoute
@@ -273,6 +320,7 @@ export interface RootRouteChildren {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  AdminAuthenticatedRoute: AdminAuthenticatedRouteWithChildren,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthenticatedFormRoute: AuthenticatedFormRoute,
   LoginRoute: LoginRoute,
@@ -291,10 +339,17 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
+        "/_adminAuthenticated",
         "/_authenticated",
         "/authenticatedForm",
         "/login",
         "/register"
+      ]
+    },
+    "/_adminAuthenticated": {
+      "filePath": "_adminAuthenticated.tsx",
+      "children": [
+        "/_adminAuthenticated/admin"
       ]
     },
     "/_authenticated": {
@@ -313,6 +368,10 @@ export const routeTree = rootRoute
     },
     "/register": {
       "filePath": "register.tsx"
+    },
+    "/_adminAuthenticated/admin": {
+      "filePath": "_adminAuthenticated/admin.tsx",
+      "parent": "/_adminAuthenticated"
     },
     "/_authenticated/_chatLayout": {
       "filePath": "_authenticated/_chatLayout.tsx",

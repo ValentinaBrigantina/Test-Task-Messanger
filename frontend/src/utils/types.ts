@@ -1,0 +1,1 @@
+export type ConnectionCb = (event: MessageEvent<any>) => void
