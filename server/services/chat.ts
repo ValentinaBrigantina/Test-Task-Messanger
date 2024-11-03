@@ -89,6 +89,7 @@ export const getMessagesForChannel = (
     .from(messages)
     .innerJoin(users, eq(messages.authorID, users.id))
     .where(eq(messages.channelID, channelID))
+    .orderBy(messages.createdAt)
 
 export const getMessageWithAuthorProfile = async ({
   authorID,
